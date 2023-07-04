@@ -1,0 +1,7 @@
+climate.air_conditioner:
+  name: LG Air Conditioner
+  aliases:
+    - Air Conditioner
+    - AC
+    - Bedroom AC
+  room: &room Bedroom

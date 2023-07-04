@@ -1,0 +1,9 @@
+platform: history_stats
+name: TV On Duration
+entity_id: media_player.jio_settopbox
+state:
+  - idle
+  - playing
+type: time
+start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+end: "{{ now() }}"

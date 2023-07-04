@@ -1,0 +1,3 @@
+platform: telegram
+name: "tg_vibe_to_stark"
+chat_id: !secret TG_CID_VIBE_STARK

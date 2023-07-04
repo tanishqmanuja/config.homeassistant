@@ -1,0 +1,7 @@
+name: Art Room
+code: "00001101000110000010"
+service:
+  id: esphome.hub01_rf_bridge_send
+  data:
+    repeat: 6
+availability: "{{ is_state('binary_sensor.hub01_status','on') and is_state('binary_sensor.node01_status','on')}}"

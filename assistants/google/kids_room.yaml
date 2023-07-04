@@ -1,0 +1,29 @@
+light.neon_led_strip:
+  name: Study Table LED
+  aliases:
+    - LED Strip
+  room: &room Kids Room
+
+switch.kids_room_switcher_ch1:
+  name: Fan
+  aliases:
+    - Fan
+  room: *room
+
+switch.kids_room_switcher_ch2:
+  name: Tubelight
+  aliases:
+    - Tube
+  room: *room
+
+switch.kids_room_switcher_ch3:
+  name: Guitar Wall Light
+  aliases:
+    - Guitar Light
+  room: *room
+
+switch.kids_room_switcher_ch4:
+  name: Door Ceiling Light
+  aliases:
+    - Door Light
+  room: *room

@@ -1,0 +1,7 @@
+---
+# Binary sensors are similar to other sensors in that they monitor the states and
+# conditions of different entities.
+#
+# https://www.home-assistant.io/integrations/template/
+#
+binary_sensor: !include_dir_list ../entities/binary_sensor

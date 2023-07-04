@@ -1,0 +1,6 @@
+---
+# Custom Integartion
+#
+# https://github.com/tanishqmanuja/ha.integration.rf4ch
+#
+rf4ch: !include_dir_named ../entities/rf4ch

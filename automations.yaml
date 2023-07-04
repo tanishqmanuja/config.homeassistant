@@ -1,0 +1,412 @@
+- id: '1664548979551'
+  alias: Drawing Room - FireTV Play Light Off
+  description: ''
+  trigger:
+  - platform: device
+    device_id: b8ee06d2ab310debb3f801fd936579aa
+    domain: media_player
+    entity_id: media_player.fire_tv_192_168_0_66
+    type: playing
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.drawing_room_switcher_all
+  mode: single
+- id: '1665127652917'
+  alias: Kids Room - Handle Single Tap
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_single_tap
+    event_data:
+      area: kids_bedroom
+  condition:
+  - condition: state
+    entity_id: input_boolean.kids_room_touchpad_flag
+    state: 'on'
+  action:
+  - parallel:
+    - if:
+      - condition: state
+        entity_id: switch.kids_room_switcher_ch2
+        state: 'on'
+      then:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.kids_room_switcher_ch1
+          - switch.kids_room_switcher_ch2
+      else:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.kids_room_switcher_ch2
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.kids_room_switcher_ch3
+      - condition: state
+        entity_id: input_boolean.winter_mode
+        state: 'off'
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.kids_room_switcher_ch1
+    - if:
+      - condition: state
+        entity_id: switch.kids_room_switcher_ch2
+        state: 'on'
+      then:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: pixel/1.mp3
+          volume_level: 0.5
+      else:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: retro/beep3-98810.mp3
+          volume_level: 0.7
+  mode: single
+- id: '1665127719216'
+  alias: Kids Room - Handle Double Tap
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_double_tap
+    event_data:
+      area: kids_bedroom
+  condition:
+  - condition: state
+    entity_id: input_boolean.kids_room_touchpad_flag
+    state: 'on'
+  action:
+  - parallel:
+    - service: switch.toggle
+      data: {}
+      target:
+        entity_id: switch.kids_room_switcher_ch1
+    - if:
+      - condition: state
+        entity_id: switch.kids_room_switcher_ch1
+        state: 'on'
+      then:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: pixel/1.mp3
+          volume_level: 0.5
+      else:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: retro/beep3-98810.mp3
+          volume_level: 0.7
+  mode: single
+- id: '1665152058838'
+  alias: Vacuum - Notify on fault
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - vacuum.milagrow_seagull
+    to: error
+  condition: []
+  action:
+  - repeat:
+      while:
+      - condition: state
+        entity_id: vacuum.milagrow_seagull
+        state: error
+      sequence:
+      - service: script.all_notify_tts
+        data_template:
+          message: "{{ [\n    \"Stupid vacuum is stuck again, Help!\",\n    \"The
+            vacuum is having some difficulties.\",\n] | random }}\n"
+      - delay:
+          hours: 0
+          minutes: 2
+          seconds: 0
+          milliseconds: 0
+  mode: single
+- id: '1665215419012'
+  alias: Kids Room - Auto Clean
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.cleaning_time
+  condition:
+  - condition: state
+    entity_id: sensor.vacuum_status
+    state: Docked
+  action:
+  - service: script.kids_room_notify_tts
+    data_template:
+      message: "{{ [\n    \"Automatic Cleaning Protocol Started\",\n    \"Room cleaning
+        Protocol has been started\",\n] | random }}\n"
+  - service: script.kids_room_clean_room
+    data: {}
+  - wait_for_trigger:
+    - platform: state
+      entity_id:
+      - sensor.vacuum_status
+      to: Docked
+    continue_on_timeout: false
+  - service: script.kids_room_notify_tts
+    data_template:
+      message: "{{ [\n    \"Automatic Cleaning Protocol has completed\",\n    \"Room
+        cleaning finished\",\n] | random }}\n"
+  mode: single
+- id: '1665913405559'
+  alias: Art Room - Handle Double Tap
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_double_tap
+    event_data:
+      area: art_room
+  condition: []
+  action:
+  - service: script.kids_room_notify_tts
+    data_template:
+      message: "{{ [\n    \"Notification Received\",\n    \"A new notification has
+        arrived\",\n] | random }}\n"
+    enabled: false
+  - service: scene.create
+    data:
+      scene_id: flash_led
+      snapshot_entities: light.art_room_neon_led_strip
+    enabled: false
+  - service: script.flash_light
+    data:
+      entity: light.art_room_neon_led_strip
+      repeat_count: 3
+      delay_ms: 300
+    enabled: false
+  - service: scene.turn_on
+    data: {}
+    target:
+      entity_id: scene.flash_led
+    enabled: false
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.art_room_switcher_all
+  mode: single
+- id: '1665915823170'
+  alias: Art Room - Handle Single Tap
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_single_tap
+    event_data:
+      area: art_room
+  condition:
+  - condition: state
+    entity_id: input_boolean.art_room_touchpad_flag
+    state: 'on'
+  action:
+  - service: script.art_room_on_off
+    data: {}
+  mode: single
+- id: '1667321588399'
+  alias: Art Room - Handle Hold
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_hold
+    event_data:
+      area: art_room
+  condition:
+  - condition: state
+    entity_id: input_boolean.art_room_touchpad_flag
+    state: 'on'
+  action:
+  - service: button.press
+    data: {}
+    target:
+      entity_id: button.art_room_switcher_off
+  mode: single
+- id: '1667379162170'
+  alias: Kids Room - Handle Hold
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_hold
+    event_data:
+      area: kids_bedroom
+  condition:
+  - condition: state
+    entity_id: input_boolean.kids_room_touchpad_flag
+    state: 'on'
+  action:
+  - service: script.kids_room_notify_tts
+    data_template:
+      message: "{{ [\n    \"Room Control Disarmed\",\n    \"Room Control Deactivated\",\n]
+        | random }}\n"
+  - service: button.press
+    data: {}
+    target:
+      entity_id: button.kids_room_switcher_off
+  mode: single
+- id: '1667736371970'
+  alias: Node01 - Handle Connect
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.ideapad_charging_status
+    from: Discharging
+    enabled: false
+  - type: connected
+    platform: device
+    device_id: 8616bf51bfe91473ba845fb472f6fc9f
+    entity_id: binary_sensor.node01_status
+    domain: binary_sensor
+  condition:
+  - condition: state
+    entity_id: timer.power_cut_reconnect_timeout
+    state: active
+  action:
+  - wait_for_trigger:
+    - type: connected
+      platform: device
+      device_id: 8616bf51bfe91473ba845fb472f6fc9f
+      entity_id: binary_sensor.node01_status
+      domain: binary_sensor
+    continue_on_timeout: false
+    timeout:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+    enabled: false
+  - service: button.press
+    data: {}
+    target:
+      entity_id: button.art_room_switcher_sync
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 4
+      milliseconds: 0
+  - service: scene.create
+    data:
+      scene_id: before
+      snapshot_entities: light.art_room_neon_led_strip
+  - service: script.flash_light
+    data:
+      entity: light.art_room_neon_led_strip
+      repeat_count: 2
+      delay_ms: 300
+  - service: scene.turn_on
+    data: {}
+    target:
+      entity_id: scene.before
+  mode: single
+- id: '1667911016539'
+  alias: Hub01 - Handle Connect
+  description: ''
+  trigger:
+  - type: connected
+    platform: device
+    device_id: cd7a49badc700e1f374e477fd1341adb
+    entity_id: binary_sensor.hub01_status
+    domain: binary_sensor
+  condition:
+  - condition: state
+    entity_id: timer.power_cut_reconnect_timeout
+    state: active
+  action:
+  - parallel:
+    - service: button.press
+      data: {}
+      target:
+        entity_id: button.kids_room_switcher_sync
+    - if:
+      - condition: state
+        entity_id: binary_sensor.quiet_time
+        state: 'off'
+      then:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: retro/mixkit-bonus-earned-in-video-game-2058.wav
+          volume_level: 0.5
+  mode: single
+- id: '1679637179142'
+  alias: Start Power Cut Timer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.ideapad_charging_status
+    from: Discharging
+    enabled: true
+  condition: []
+  action:
+  - service: timer.start
+    data: {}
+    target:
+      entity_id: timer.power_cut_reconnect_timeout
+  mode: single
+- id: '1684225668436'
+  alias: Kids Room - Handle Triple Tap
+  description: ''
+  trigger:
+  - platform: event
+    event_type: esphome.touchpad_triple_tap
+    event_data:
+      area: kids_bedroom
+  condition:
+  - condition: state
+    entity_id: input_boolean.kids_room_touchpad_flag
+    state: 'on'
+  action:
+  - parallel:
+    - if:
+      - condition: state
+        entity_id: switch.kids_room_switcher_ch3
+        state: 'off'
+      then:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.kids_room_switcher_ch2
+          - switch.kids_room_switcher_ch4
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.kids_room_switcher_ch3
+      else:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.kids_room_switcher_ch3
+    - if:
+      - condition: state
+        entity_id: switch.kids_room_switcher_ch3
+        state: 'on'
+      then:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: pixel/1.mp3
+          volume_level: 0.5
+      else:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: retro/beep3-98810.mp3
+          volume_level: 0.7
+  mode: single
+- id: '1687701109143'
+  alias: Backup HA
+  description: Runs at 3AM every night.
+  trigger:
+  - platform: time
+    at: 03:00:00
+  condition: []
+  action:
+  - service: auto_backup.backup_full
+    data:
+      keep_days: 3
+  mode: single

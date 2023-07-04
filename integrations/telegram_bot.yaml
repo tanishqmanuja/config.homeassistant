@@ -1,0 +1,7 @@
+---
+# The telegram integration uses Telegram to deliver notifications
+# from Home Assistant to your Telegram application(s).
+#
+# https://www.home-assistant.io/integrations/telegram/
+#
+telegram_bot: !include_dir_list ../entities/telegram_bot

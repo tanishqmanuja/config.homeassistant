@@ -1,0 +1,35 @@
+
+ping_oneplus5:
+  name: ping_oneplus5
+  mac:
+  icon:
+  picture:
+  track: true
+
+ping_galaxy_tab_s6_lite:
+  name: ping_galaxy_tab_s6_lite
+  mac:
+  icon:
+  picture:
+  track: true
+
+ping_realme6:
+  name: ping_realme6
+  mac:
+  icon:
+  picture:
+  track: true
+
+ping_oneplus9rt:
+  name: ping_oneplus9rt
+  mac:
+  icon:
+  picture:
+  track: true
+
+ping_oneplus6t:
+  name: ping_oneplus6t
+  mac:
+  icon:
+  picture:
+  track: true

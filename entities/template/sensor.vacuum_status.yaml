@@ -1,0 +1,19 @@
+sensor:
+  - name: Vacuum Status
+    unique_id: milagrow_vacuum_status
+    state: >
+      {% if is_state('sensor.vacuum_working_status_code','0') %}
+        Idle
+      {% elif is_state('sensor.vacuum_working_status_code','1') %}
+        Cleaning - Auto
+      {% elif is_state('sensor.vacuum_working_status_code','2') %}
+        Cleaning - Wall Follow
+      {% elif is_state('sensor.vacuum_working_status_code','3') %}
+        Cleaning - Spiral
+      {% elif is_state('sensor.vacuum_working_status_code','4') %}
+        Returning to Dock
+      {% elif is_state('sensor.vacuum_working_status_code','5') %}
+        Docked
+      {% else %}
+        Unknown
+      {% endif %}

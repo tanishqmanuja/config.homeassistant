@@ -1,0 +1,6 @@
+---
+# iframe Panel
+#
+# https://www.home-assistant.io/integrations/panel_iframe/
+#
+panel_iframe: !include_dir_named ../panels

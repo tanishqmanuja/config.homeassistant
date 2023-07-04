@@ -1,0 +1,4 @@
+platform: tod
+name: Quiet Time
+after: "23:30"
+before: "08:00"

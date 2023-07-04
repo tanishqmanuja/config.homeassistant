@@ -1,0 +1,7 @@
+name: Kids Room
+code: "10111010100101100100"
+service:
+  id: esphome.hub01_rf_bridge_send
+  data:
+    repeat: 6
+availability: "{{ is_state('binary_sensor.hub01_status','on') }}"

@@ -1,0 +1,4 @@
+platform: wake_on_lan
+name: starkdesk_wol
+mac: 18:c0:4d:39:b6:36
+host: 192.168.0.10

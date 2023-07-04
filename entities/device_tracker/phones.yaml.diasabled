@@ -1,0 +1,10 @@
+- platform: ping
+  scan_interval: 150
+  count: 2
+  consider_home: 450
+  hosts:
+    ping_oneplus5: 192.168.0.20
+    ping_oneplus9rt: 192.168.0.22
+    ping_oneplus6t: 192.168.0.24
+    ping_realme6: 192.168.0.26
+    ping_galaxy_tab_s6_lite: 192.168.0.27

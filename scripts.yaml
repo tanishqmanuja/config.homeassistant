@@ -1,0 +1,309 @@
+drawing_room_chandelier_switch_color:
+  alias: Drawing Room Chandelier Switch Color
+  sequence:
+  - repeat:
+      count: 2
+      sequence:
+      - type: toggle
+        device_id: 91c0e5db53408159cce692855df8f0c6
+        entity_id: switch.drawing_room_switcher_ch4
+        domain: switch
+  mode: single
+  icon: mdi:swap-horizontal
+kids_room_clean_room:
+  alias: 'Kids Room - Cleaning '
+  sequence:
+  - device_id: 7038df15908c7ad49682b4d8b460cb3a
+    domain: vacuum
+    entity_id: vacuum.milagrow_seagull
+    type: clean
+  - delay:
+      hours: 0
+      minutes: 15
+      seconds: 0
+      milliseconds: 0
+  - device_id: 7038df15908c7ad49682b4d8b460cb3a
+    domain: vacuum
+    entity_id: vacuum.milagrow_seagull
+    type: dock
+  mode: single
+  icon: mdi:vacuum
+kids_room_notify_tts:
+  alias: Kids Room - Notify TTS
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.quiet_time
+    state: 'off'
+  - service: tts.mimic3_say
+    data:
+      entity_id: media_player.homelab_mopidy
+      message: '{{ message }}
+
+        '
+  mode: single
+  icon: mdi:speaker-message
+all_notify_tts:
+  alias: All - Notify TTS
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.quiet_time
+    state: 'off'
+  - parallel:
+    - service: tts.mimic3_say
+      data:
+        entity_id: media_player.homelab
+        message: '{{ message }}
+
+          '
+    - service: tts.mimic3_say
+      data:
+        entity_id: media_player.jio_settopbox
+        message: '{{ message }}
+
+          '
+  mode: single
+  icon: mdi:speaker-message
+flash_light:
+  alias: Flash Light
+  sequence:
+  - repeat:
+      count: '{{repeat_count}}'
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: '{{entity}}'
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: '{{delay_ms}}'
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: '{{entity}}'
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: '{{delay_ms}}'
+  mode: single
+  icon: mdi:alarm-light
+kids_room_sleep_mode:
+  alias: Kids Room - Sleep Mode
+  sequence:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.kids_room_switcher_ch4
+      - switch.kids_room_switcher_ch2
+  - if:
+    - condition: state
+      entity_id: input_boolean.winter_mode
+      state: 'off'
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.kids_room_switcher_ch1
+    else: []
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.kids_room_switcher_ch3
+  mode: single
+  icon: mdi:sleep
+art_room_on_off:
+  alias: Art Room - On/Off
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.hub01_status
+      state: 'on'
+    then:
+    - if:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: switch.art_room_switcher_ch1
+          state: 'on'
+        - condition: state
+          entity_id: switch.art_room_switcher_ch2
+          state: 'on'
+        - condition: state
+          entity_id: switch.art_room_switcher_ch3
+          state: 'on'
+      then:
+      - service: button.press
+        data: {}
+        target:
+          entity_id: button.art_room_switcher_off
+      else:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.art_room_switcher_ch1
+        enabled: false
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+        enabled: false
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.art_room_switcher_ch2
+        enabled: false
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+        enabled: false
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.art_room_switcher_ch3
+        enabled: false
+      - service: button.press
+        data: {}
+        target:
+          entity_id: button.art_room_switcher_on
+    else:
+    - service: scene.create
+      data:
+        scene_id: before
+        snapshot_entities: light.led_strip
+    - service: script.flash_light
+      data:
+        entity: light.led_strip
+        repeat_count: 2
+        delay_ms: 200
+    - service: scene.turn_on
+      data: {}
+      target:
+        entity_id: scene.before
+  mode: single
+  icon: mdi:toggle-switch
+kids_room_play_sound:
+  alias: Kids Room - Play Sound
+  description: Plays Media in Kids Room
+  fields:
+    file_path:
+      description: File Path without starting '/'
+      example: es/glitch.mp3
+    volume_level:
+      description: Volume Level to set before playing
+      example: 0.7
+      default: 1
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.quiet_time
+    state: 'off'
+    enabled: false
+  - service: media_player.volume_set
+    target:
+      entity_id: media_player.homelab_mopidy
+    data:
+      volume_level: '{{ volume_level or 1 }}
+
+        '
+  - service: media_player.play_media
+    target:
+      entity_id: media_player.homelab_mopidy
+    data:
+      media_content_id: media-source://media_source/sounds/{{file_path}}
+      media_content_type: audio/mpeg
+  mode: single
+  icon: mdi:cast-audio
+call_magic:
+  alias: Call Magic
+  sequence:
+  - service: script.kids_room_play_sound
+    data:
+      file: personal/whistle.m4a
+    enabled: false
+  - parallel:
+    - service: script.kids_room_play_sound
+      data:
+        file_path: personal/whistle.m4a
+      enabled: true
+    - service: script.parents_room_play_sound
+      data:
+        file: personal/whistle.m4a
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.homelab_mopidy
+      data:
+        media_content_id: media-source://media_source/sounds/es/glitch.mp3
+        media_content_type: audio/mpeg
+      metadata:
+        title: glitch.mp3
+        thumbnail:
+        media_class: music
+        children_media_class:
+        navigateIds:
+        - {}
+        - media_content_type: app
+          media_content_id: media-source://media_source
+        - media_content_type: ''
+          media_content_id: media-source://media_source/sounds/es
+      enabled: false
+  mode: single
+  icon: mdi:dog
+parents_room_play_sound:
+  alias: Parents Room - Play Sound
+  sequence:
+  - condition: state
+    entity_id: binary_sensor.quiet_time
+    state: 'off'
+  - service: media_player.play_media
+    target:
+      entity_id: media_player.jio_settopbox
+    data:
+      media_content_type: audio/mp3
+      media_content_id: media-source://media_source/sounds/{{file}}
+  mode: single
+  icon: mdi:cast-audio
+kids_room_bed_walk_protocol:
+  alias: Kids Room - Bed Walk Protocol
+  sequence:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: switch.kids_room_switcher_ch2
+      state: 'on'
+    - condition: state
+      entity_id: switch.kids_room_switcher_ch3
+      state: 'off'
+  - repeat:
+      count: 2
+      sequence:
+      - service: script.kids_room_play_sound
+        data:
+          file_path: pixel/2.mp3
+          volume_level: 0.15
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 2
+          milliseconds: 0
+  - service: script.kids_room_play_sound
+    data:
+      file_path: pixel/boot.mp3
+      volume_level: 0.3
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.kids_room_switcher_ch3
+      - switch.kids_room_switcher_ch2
+  mode: single
+  icon: mdi:bed

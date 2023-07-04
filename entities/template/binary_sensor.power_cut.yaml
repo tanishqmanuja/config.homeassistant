@@ -1,0 +1,9 @@
+binary_sensor:
+  - name: Power Cut
+    unique_id: 84989deb-63b1-4923-8447-cba9f53a8caf
+    state: >-
+      {{
+        is_state('binary_sensor.hub01_status','off') 
+        and is_state('binary_sensor.node01_status','off')
+        and is_state('sensor.ideapad_charging_status','Discharging')
+      }}

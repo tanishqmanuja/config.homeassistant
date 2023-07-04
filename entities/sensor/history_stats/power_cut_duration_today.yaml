@@ -1,0 +1,7 @@
+platform: history_stats
+name: Power Cut Duration Today
+entity_id: binary_sensor.power_cut
+state: "on"
+type: time
+start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+end: "{{ now() }}"

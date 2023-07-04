@@ -1,0 +1,41 @@
+---
+# The logger integration lets you define the level of logging activities
+# in Home Assistant.
+#
+# I use this to reduce error messages for specific things,
+# so I can focus on log messages that matter to me.
+#
+logger:
+  default: warning
+
+  filters:
+    homeassistant.loader:
+      # Really? Cool... I know... I installed them...
+      - "We found a custom integration"
+
+    homeassistant.config_entries:
+      # The will be fine when they come online.
+      - "Config entry .* for (androidtv|jellyfin) .* Retrying in background"
+
+    JELLYFIN.jellyfin_apiclient_python.connection_manager:
+      # Stupid jellyfin.
+      - "connect_to_address .* failed"
+
+    homeassistant.helpers.integration_platform:
+      # Stupid jellyfin Again!
+      - "Error processing platform jellyfin.media_source"
+
+    custom_components.localtuya.vacuum:
+      # Vacuum is requesting everthing like bonkers.
+      - "requesting unknown DPS"
+
+    homeassistant.util.yaml.loader:
+      # I use YAML anchors and aliasses, causing duplicate keys in YAML.
+      # For this use-case, that is on purpose, as an alias is used, but
+      # with some overrides.
+      # While a good warning, I'm going to disable it.
+      - "contains duplicate key"
+
+    androidtv.adb_manager.adb_manager_async:
+      # Supress timeout when adb connection is offline.
+      - "TcpTimeoutException"

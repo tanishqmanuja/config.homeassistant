@@ -1,0 +1,25 @@
+# Temp
+**/__pycache__
+
+# ENV
+secrets.yaml
+
+# Backup
+backups
+
+# Custom Addons
+custom_components
+www/community
+
+# User Sensitive Data
+image
+tts
+sounds
+
+.cloud
+.storage
+.priv
+.vscode
+
+home-assistant.log*
+home-assistant*.db*

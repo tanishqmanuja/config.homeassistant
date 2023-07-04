@@ -1,0 +1,4 @@
+platform: polling
+api_key: !secret TG_API_KEY
+allowed_chat_ids:
+  - !secret TG_CID_VIBE_STARK
