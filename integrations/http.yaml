@@ -13,7 +13,7 @@ http:
   # that are allowed to set the X-Forwarded-For header.
   trusted_proxies:
     - 192.168.0.0/24 # Local Lan
-    - 172.168.0.0/24 # Homelab Docker Network
+    - 172.16.0.0/24 # Homelab Docker Network
 
   # Enables additional IP filtering.
   ip_ban_enabled: false

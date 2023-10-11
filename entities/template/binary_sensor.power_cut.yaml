@@ -5,5 +5,8 @@ binary_sensor:
       {{
         is_state('binary_sensor.hub01_status','off') 
         and is_state('binary_sensor.node01_status','off')
-        and is_state('sensor.ideapad_charging_status','Discharging')
+        and (
+          is_state('sensor.ideapad_charging_status','Discharging')
+          or (now() - states.sensor.ideapad_charging_status.last_changed).total_seconds() < 5*60
+        )
       }}

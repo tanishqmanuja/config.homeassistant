@@ -1,0 +1,16 @@
+---
+switch.art_room_switcher_ch1:
+  name: Tubelight
+  hidden: false
+switch.art_room_switcher_ch2:
+  name: Table Light One
+  hidden: false
+switch.art_room_switcher_ch3:
+  name: Table Light Two
+  hidden: false
+light.table_lights:
+  name: Table Lights
+  hidden: false
+button.art_room_switcher_sync:
+  name: Sync Art Room
+  hidden: false

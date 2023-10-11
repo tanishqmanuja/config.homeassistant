@@ -8,6 +8,10 @@
 logger:
   default: warning
 
+  logs:
+    custom_components.custom_bluetooth_tracker: info
+    custom_components.custom_bluetooth_tracker.device_tracker: info
+
   filters:
     homeassistant.loader:
       # Really? Cool... I know... I installed them...

@@ -253,11 +253,6 @@
   alias: Node01 - Handle Connect
   description: ''
   trigger:
-  - platform: state
-    entity_id:
-    - sensor.ideapad_charging_status
-    from: Discharging
-    enabled: false
   - type: connected
     platform: device
     device_id: 8616bf51bfe91473ba845fb472f6fc9f
@@ -332,6 +327,10 @@
         data:
           file_path: retro/mixkit-bonus-earned-in-video-game-2058.wav
           volume_level: 0.5
+  - service: button.press
+    data: {}
+    target:
+      entity_id: button.art_room_switcher_sync
   mode: single
 - id: '1679637179142'
   alias: Start Power Cut Timer

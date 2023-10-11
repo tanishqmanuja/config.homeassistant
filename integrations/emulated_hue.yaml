@@ -1,0 +1,13 @@
+---
+# The emulated_hue integration provides a virtual Philips Hue bridge, written entirely in
+# software that allows services that work with the Hue API to interact with Home
+# Assistant entities.
+#
+# https://www.home-assistant.io/integrations/emulated_hue
+#
+emulated_hue:
+  type: alexa
+  host_ip: 192.168.0.12
+  listen_port: 8998
+  expose_by_default: false
+  entities: !include_dir_merge_named ../assistants/alexa

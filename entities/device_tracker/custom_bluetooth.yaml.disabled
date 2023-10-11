@@ -1,0 +1,4 @@
+- platform: custom_bluetooth_tracker
+  interval_seconds: 15
+  seen_interval_seconds: 600
+  consider_home: 90
