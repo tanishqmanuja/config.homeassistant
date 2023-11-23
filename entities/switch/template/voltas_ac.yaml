@@ -1,0 +1,31 @@
+platform: template
+switches:
+  voltas_ac_sleep:
+    friendly_name: "Voltas AC Sleep"
+    value_template: "{{ is_state_attr('climate.voltas_ac', 'sleep', '0') }}"
+    availability_template: "{{ not is_state('climate.voltas_ac', 'unavailable') }}"
+    turn_on:
+      service: tasmota_irhvac.set_sleep
+      data:
+        entity_id: climate.voltas_ac
+        sleep: '0'
+    turn_off:
+      service: tasmota_irhvac.set_sleep
+      data:
+        entity_id: climate.voltas_ac
+        sleep: '-1'
+  
+  voltas_ac_light:
+    friendly_name: "Voltas AC Light"
+    value_template: "{{ is_state_attr('climate.voltas_ac', 'light', 'off') }}"
+    availability_template: "{{ not is_state('climate.voltas_ac', 'unavailable') }}"
+    turn_on:
+      service: tasmota_irhvac.set_light
+      data:
+        entity_id: climate.voltas_ac
+        light: 'off'
+    turn_off:
+      service: tasmota_irhvac.set_light
+      data:
+        entity_id: climate.voltas_ac
+        light: 'on'

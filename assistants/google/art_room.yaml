@@ -1,16 +1,16 @@
-switch.art_room_switcher_ch1:
+light.art_room_switcher_ch1:
   name: Tubelight
   aliases:
     - Tube
   room: &room Art Room
 
-switch.art_room_switcher_ch2:
+light.art_room_switcher_ch2:
   name: Table Light One
   aliases:
     - Table Light
   room: *room
 
-switch.art_room_switcher_ch3:
+light.art_room_switcher_ch3:
   name: Table Light Two
   aliases:
     - Table Light

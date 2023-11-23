@@ -4,25 +4,25 @@ light.neon_led_strip:
     - LED Strip
   room: &room Kids Room
 
-switch.kids_room_switcher_ch1:
+fan.kids_room_switcher_ch1:
   name: Fan
   aliases:
     - Fan
   room: *room
 
-switch.kids_room_switcher_ch2:
+light.kids_room_switcher_ch2:
   name: Tubelight
   aliases:
     - Tube
   room: *room
 
-switch.kids_room_switcher_ch3:
+light.kids_room_switcher_ch3:
   name: Guitar Wall Light
   aliases:
     - Guitar Light
   room: *room
 
-switch.kids_room_switcher_ch4:
+light.kids_room_switcher_ch4:
   name: Door Ceiling Light
   aliases:
     - Door Light
