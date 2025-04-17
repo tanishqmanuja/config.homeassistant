@@ -1,0 +1,30 @@
+# Cache
+**/__pycache__
+
+# Env
+secrets.yaml
+
+# Backup
+backups
+
+# Custom Addons
+custom_components
+www/community
+www/alexa_tts
+
+# User Sensitive Data
+image
+tts
+media
+
+# Debug
+debug
+
+# IDE
+.vscode
+
+# Home Assistant
+.cloud
+.storage
+home-assistant.log*
+home-assistant*.db*

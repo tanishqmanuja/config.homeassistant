@@ -1,0 +1,6 @@
+---
+emulated_hue:
+  host_ip: 192.168.0.12
+  listen_port: 8998
+  expose_by_default: false
+  entities: !include_dir_merge_named ../entities/emulated_hue

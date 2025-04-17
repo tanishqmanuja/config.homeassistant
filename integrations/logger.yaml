@@ -1,0 +1,23 @@
+---
+logger:
+  default: warning
+
+  filters:
+    homeassistant.loader:
+      # Really? Cool... I know... I installed them...
+      - "We found a custom integration"
+
+    homeassistant.helpers.frame:
+      # Ok, Tell HACS not me...
+      - "Detected that custom integration 'hacs' accesses"
+
+    homeassistant.util.yaml.loader:
+      # I use YAML anchors and aliasses, causing duplicate keys in YAML.
+      # For this use-case, that is on purpose, as an alias is used, but
+      # with some overrides.
+      # While a good warning, I'm going to disable it.
+      - "contains duplicate key"
+
+    aioesphomeapi.reconnect_logic:
+      # My ESPHome devices are allowed be offline sometimes.
+      - "Can't connect to ESPHome API for"

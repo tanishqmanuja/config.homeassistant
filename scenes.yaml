@@ -1,0 +1,401 @@
+- id: '1743242669195'
+  name: Tanishq Room Light Level 0
+  entities:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:desk-lamp
+      friendly_name: Desk Lamp
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_wipro_cct_smart:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:lightbulb-fluorescent-tube
+      friendly_name: Table Fill Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_c:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_d:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_b:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:light-strip
+      friendly_name: Cove Light
+      supported_features: 0
+      state: 'off'
+  icon: mdi:brightness-1
+  metadata:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      entity_only: true
+    light.tanishq_room_wipro_cct_smart:
+      entity_only: true
+    light.tanishq_room_switcher_ch_c:
+      entity_only: true
+    light.tanishq_room_switcher_ch_d:
+      entity_only: true
+    light.tanishq_room_switcher_ch_b:
+      entity_only: true
+- id: '1743242731734'
+  name: Tanishq Room Light Level 1
+  entities:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:desk-lamp
+      friendly_name: Desk Lamp
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_wipro_cct_smart:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      color_mode: color_temp
+      brightness: 128
+      color_temp_kelvin: 2000
+      color_temp: 500
+      hs_color:
+      - 30.601
+      - 94.547
+      rgb_color:
+      - 255
+      - 137
+      - 14
+      xy_color:
+      - 0.598
+      - 0.383
+      icon: mdi:lightbulb-fluorescent-tube
+      friendly_name: Table Fill Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_c:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_d:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_b:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:light-strip
+      friendly_name: Cove Light
+      supported_features: 0
+      state: 'off'
+  icon: mdi:brightness-2
+  metadata:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      entity_only: true
+    light.tanishq_room_wipro_cct_smart:
+      entity_only: true
+    light.tanishq_room_switcher_ch_c:
+      entity_only: true
+    light.tanishq_room_switcher_ch_d:
+      entity_only: true
+    light.tanishq_room_switcher_ch_b:
+      entity_only: true
+- id: '1743242811340'
+  name: Tanishq Room Light Level 2
+  entities:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:desk-lamp
+      friendly_name: Desk Lamp
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_wipro_cct_smart:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      color_mode: color_temp
+      brightness: 128
+      color_temp_kelvin: 2000
+      color_temp: 500
+      hs_color:
+      - 30.601
+      - 94.547
+      rgb_color:
+      - 255
+      - 137
+      - 14
+      xy_color:
+      - 0.598
+      - 0.383
+      icon: mdi:lightbulb-fluorescent-tube
+      friendly_name: Table Fill Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_b:
+      supported_color_modes:
+      - onoff
+      color_mode: onoff
+      icon: phu:light-strip
+      friendly_name: Cove Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_c:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_d:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+  icon: mdi:brightness-3
+  metadata:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      entity_only: true
+    light.tanishq_room_wipro_cct_smart:
+      entity_only: true
+    light.tanishq_room_switcher_ch_b:
+      entity_only: true
+    light.tanishq_room_switcher_ch_c:
+      entity_only: true
+    light.tanishq_room_switcher_ch_d:
+      entity_only: true
+- id: '1743242942619'
+  name: Tanishq Room Light Level 3
+  entities:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:desk-lamp
+      friendly_name: Desk Lamp
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_wipro_cct_smart:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      color_mode: color_temp
+      brightness: 102
+      color_temp_kelvin: 2000
+      color_temp: 500
+      hs_color:
+      - 30.601
+      - 94.547
+      rgb_color:
+      - 255
+      - 137
+      - 14
+      xy_color:
+      - 0.598
+      - 0.383
+      icon: mdi:lightbulb-fluorescent-tube
+      friendly_name: Table Fill Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_c:
+      supported_color_modes:
+      - onoff
+      color_mode: onoff
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_d:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_b:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:light-strip
+      friendly_name: Cove Light
+      supported_features: 0
+      state: 'off'
+  icon: mdi:brightness-4
+  metadata:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      entity_only: true
+    light.tanishq_room_wipro_cct_smart:
+      entity_only: true
+    light.tanishq_room_switcher_ch_c:
+      entity_only: true
+    light.tanishq_room_switcher_ch_d:
+      entity_only: true
+    light.tanishq_room_switcher_ch_b:
+      entity_only: true
+- id: '1743243029169'
+  name: Tanishq Room Light Level 4
+  entities:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:desk-lamp
+      friendly_name: Desk Lamp
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_wipro_cct_smart:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6500
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      icon: mdi:lightbulb-fluorescent-tube
+      friendly_name: Table Fill Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_c:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'off'
+    light.tanishq_room_switcher_ch_d:
+      supported_color_modes:
+      - onoff
+      color_mode: onoff
+      icon: phu:bulb-group-ceiling-round
+      friendly_name: Ceiling Light
+      supported_features: 0
+      state: 'on'
+    light.tanishq_room_switcher_ch_b:
+      supported_color_modes:
+      - onoff
+      color_mode:
+      icon: phu:light-strip
+      friendly_name: Cove Light
+      supported_features: 0
+      state: 'off'
+  icon: mdi:brightness-5
+  metadata:
+    light.tanishq_room_wipro_rgbcw_smart_bulb:
+      entity_only: true
+    light.tanishq_room_wipro_cct_smart:
+      entity_only: true
+    light.tanishq_room_switcher_ch_c:
+      entity_only: true
+    light.tanishq_room_switcher_ch_d:
+      entity_only: true
+    light.tanishq_room_switcher_ch_b:
+      entity_only: true

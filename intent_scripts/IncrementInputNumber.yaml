@@ -1,0 +1,16 @@
+action:
+  - service: input_number.increment
+    target:
+      entity_id: "{{ targets.entities }}"
+
+speech:
+  text: >
+    {% set verbs = ['Incremented', 'Increased', 'Raised'] %}
+    {% set verb = verbs | random %}
+    {% if targets.entities | length == 1 %}
+      {{ verb }} It!
+    {% elif targets.entities | length == 2 %}
+      {{ verb }} both
+    {% else %}
+      {{ verb }} {{ targets.entities | length }} entities
+    {% endif %}

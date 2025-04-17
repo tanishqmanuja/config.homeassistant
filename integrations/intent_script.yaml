@@ -1,0 +1,1 @@
+intent_script: !include_dir_named ../intent_scripts

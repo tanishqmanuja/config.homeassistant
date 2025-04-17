@@ -1,0 +1,6 @@
+language: "en"
+intents:
+  YearOfVoice:
+    data:
+      - sentences:
+          - "how is the year of voice going"

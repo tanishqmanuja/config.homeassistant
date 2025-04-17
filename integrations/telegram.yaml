@@ -1,0 +1,3 @@
+# https://www.home-assistant.io/integrations/telegram
+---
+telegram_bot: !include_dir_list ../entities/telegram/bot

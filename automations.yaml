@@ -1,0 +1,481 @@
+- id: '1718620410310'
+  alias: Handle Power Cut
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:00:00
+    id: reset
+  - platform: state
+    entity_id:
+    - sensor.ideapad_charging_status
+    to: Discharging
+    id: cut
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - reset
+      sequence:
+      - service: counter.reset
+        metadata: {}
+        data: {}
+        target:
+          entity_id: counter.power_cut_count
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - cut
+        - condition: state
+          entity_id: input_boolean.power_cut_detection
+          state: 'on'
+      sequence:
+      - service: counter.increment
+        metadata: {}
+        data: {}
+        target:
+          entity_id: counter.power_cut_count
+  mode: single
+- id: '1719911590719'
+  alias: 'Backup: Daily'
+  description: ''
+  triggers:
+  - at: 03:00:00
+    trigger: time
+  conditions: []
+  actions:
+  - data:
+      compressed: true
+      keep_days: 3
+    action: auto_backup.backup_full
+  mode: single
+- id: '1720681520882'
+  alias: AC Sleep (Reliable)
+  description: ''
+  triggers:
+  - entity_id:
+    - timer.ac_sleep_timer
+    from:
+    to: idle
+    id: check
+    trigger: state
+  - entity_id:
+    - input_boolean.ac_sleep_enable
+    id: start
+    to: 'on'
+    from: 'off'
+    trigger: state
+  - entity_id:
+    - input_boolean.ac_sleep_enable
+    from: 'on'
+    to: 'off'
+    id: stop
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - start
+      sequence:
+      - metadata: {}
+        data_template:
+          duration: '{{ states(''input_number.ac_sleep_timer_input_hrs'') | int *
+            60 * 60 + states(''input_number.ac_sleep_timer_input_mins'') | int * 60
+            }}'
+        target:
+          entity_id: timer.ac_sleep_timer
+        action: timer.start
+    - conditions:
+      - condition: trigger
+        id:
+        - stop
+      sequence:
+      - metadata: {}
+        data: {}
+        target:
+          entity_id: timer.ac_sleep_timer
+        action: timer.cancel
+    - conditions:
+      - condition: trigger
+        id:
+        - check
+      - condition: state
+        entity_id: input_boolean.ac_sleep_enable
+        state: 'on'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: climate.air_conditioner
+          state: unavailable
+        then:
+        - target:
+            entity_id:
+            - timer.ac_sleep_timer
+          data:
+            duration: 00:05:00
+          action: timer.start
+        else:
+        - parallel:
+          - if:
+            - condition: not
+              conditions:
+              - condition: state
+                entity_id: climate.air_conditioner
+                state: 'off'
+            then:
+            - metadata: {}
+              data: {}
+              target:
+                entity_id: climate.air_conditioner
+              action: climate.turn_off
+            alias: Turn off AC, If not already off
+          - alias: Verify AC is off
+            sequence:
+            - wait_template: '{{ is_state(''climate.air_conditioner'', ''off'') }}'
+              timeout: 00:00:30
+              alias: Wait for AC to turn off
+            - alias: Check for timeout
+              if:
+              - condition: template
+                value_template: '{{ not wait.completed }}'
+                alias: Timeout occurred
+              then:
+              - target:
+                  entity_id:
+                  - timer.ac_sleep_timer
+                data:
+                  duration: 00:05:00
+                action: timer.start
+              else:
+              - target:
+                  entity_id: input_boolean.ac_sleep_enable
+                data: {}
+                action: input_boolean.turn_off
+    default: []
+  mode: single
+- id: '1734463754661'
+  alias: Switcher Sync
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.ideapad_charging_status
+    from: Discharging
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.tanishq_room_switcher_sync
+  mode: single
+- id: '1739887084973'
+  alias: Protocol Sundown
+  description: Turn on warm lights after sun down.
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sun.sun
+    attribute: elevation
+    below: -2
+  conditions:
+  - condition: state
+    entity_id: light.tanishq_room_switcher_ch_d
+    state: 'on'
+    enabled: true
+  - condition: state
+    entity_id: light.tanishq_room_switcher_ch_b
+    state: 'off'
+  actions:
+  - alias: Set up variables for the actions
+    variables:
+      TAG: sundown-protocol
+      action_skip: '{{ ''SKIP_'' ~ context.id }}'
+      action_activate: '{{ ''ACTIVATE_'' ~ context.id }}'
+      dynamic_offset_minutes: '{% set day_of_year = now().timetuple().tm_yday %} {%
+        set min_offset = 10 %} {% set max_offset = 20 %} {% set scale = (1 - sin(
+        (day_of_year - 80) * 3.14159 / 182.5 )) / 2 %} {{ (min_offset + scale * (max_offset
+        - min_offset)) | int }}
+
+        '
+  - alias: Ask to skip or activate the protocol
+    action: notify.mobile_app_oneplus_5
+    data:
+      title: Sundown Protocol
+      message: Is about to be activated in {{dynamic_offset_minutes}} mins. Do you
+        want to skip this today?
+      data:
+        actions:
+        - action: '{{ action_skip }}'
+          title: Skip
+        - action: '{{ action_activate }}'
+          title: Activate Now
+        tag: '{{ TAG }}'
+  - alias: Wait for a response
+    wait_for_trigger:
+    - event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_skip }}'
+      trigger: event
+    - event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_activate }}'
+      trigger: event
+    continue_on_timeout: true
+    timeout:
+      hours: 0
+      minutes: '{{ dynamic_offset_minutes }}'
+      seconds: 0
+      milliseconds: 0
+  - alias: Activate the protocol
+    choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ wait.trigger.event.data.action == action_skip }}'
+      sequence: []
+      alias: If Skipped
+    default:
+    - alias: Clear notification
+      action: notify.mobile_app_oneplus_5
+      data:
+        message: clear_notification
+        data:
+          tag: '{{ TAG }}'
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.tanishq_room_light_level_3_stateful_scene
+  mode: single
+- id: '1740496832263'
+  alias: Protocol Sleep Protect
+  description: Dim the lights to mimic nature.
+  triggers:
+  - trigger: time
+    at: '21:50:00'
+  conditions:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: light.tanishq_room_switcher_ch_d
+      state: 'on'
+      enabled: true
+    - condition: state
+      entity_id: light.tanishq_room_switcher_ch_c
+      state: 'on'
+    enabled: false
+  actions:
+  - alias: Set up variables for the actions
+    variables:
+      TAG: sleep-protect-protocol
+      action_skip: '{{ ''SKIP_'' ~ context.id }}'
+      action_activate: '{{ ''ACTIVATE_'' ~ context.id }}'
+  - alias: Ask to skip or activate the protocol
+    action: notify.mobile_app_oneplus_5
+    data:
+      title: Sleep Protect Protocol
+      message: Is about to be activated. Do you want to skip this today?
+      data:
+        actions:
+        - action: '{{ action_skip }}'
+          title: Skip
+        - action: '{{ action_activate }}'
+          title: Activate Now
+        tag: '{{ TAG }}'
+  - alias: Wait for a response
+    wait_for_trigger:
+    - event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_skip }}'
+      trigger: event
+    - event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_activate }}'
+      trigger: event
+    continue_on_timeout: true
+    timeout:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+  - alias: Activate the protocol
+    choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ wait.trigger.event.data.action == action_skip }}'
+      sequence: []
+      alias: If Skipped
+    default:
+    - alias: Clear notification
+      action: notify.mobile_app_oneplus_5
+      data:
+        message: clear_notification
+        data:
+          tag: '{{ TAG }}'
+    - if:
+      - condition: state
+        entity_id: light.tanishq_room_switcher_ch_d
+        state: 'on'
+        enabled: true
+      - condition: state
+        entity_id: light.tanishq_room_switcher_ch_c
+        state: 'on'
+      then:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.tanishq_room_light_level_2_stateful_scene
+  mode: single
+- id: '1740681784641'
+  alias: 'WLED: Polling'
+  description: Manually update WLED devices.
+  triggers:
+  - trigger: time_pattern
+    minutes: /5
+    hours: '*'
+    seconds: '0'
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    data:
+      entity_id:
+      - light.tanishq_room_floor_lamp
+  mode: single
+- id: '1743232635391'
+  alias: VIBE Assist
+  description: ''
+  use_blueprint:
+    path: telegram/telegram_bot_conversation.yaml
+    input:
+      conversation_agent: conversation.google_generative_ai
+      whitelist_chat_id:
+      - '1418463077'
+- id: '1743244736962'
+  alias: 'Tanishq Room: Set Light Level'
+  triggers:
+  - entity_id:
+    - input_number.tanishq_room_light_level
+    id: slider_changed
+    trigger: state
+    alias: When Slider Moved
+  - entity_id:
+    - switch.tanishq_room_light_level_0_stateful_scene
+    - switch.tanishq_room_light_level_1_stateful_scene
+    - switch.tanishq_room_light_level_2_stateful_scene
+    - switch.tanishq_room_light_level_3_stateful_scene
+    - switch.tanishq_room_light_level_4_stateful_scene
+    to: 'on'
+    id: scene_switched
+    trigger: state
+    alias: When Scene Switched
+  - entity_id:
+    - switch.tanishq_room_light_level_0_stateful_scene
+    - switch.tanishq_room_light_level_1_stateful_scene
+    - switch.tanishq_room_light_level_2_stateful_scene
+    - switch.tanishq_room_light_level_3_stateful_scene
+    - switch.tanishq_room_light_level_4_stateful_scene
+    to: 'off'
+    for: 00:01:00
+    id: no_scene_matched
+    trigger: state
+    alias: No Scene Matched
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: slider_changed
+      - condition: template
+        value_template: '{{ not is_state(''switch.tanishq_room_light_level_'' ~ states(''input_number.tanishq_room_light_level'')
+          | int ~ ''_stateful_scene'', ''on'') }}
+
+          '
+      sequence:
+      - data:
+          entity_id: switch.tanishq_room_light_level_{{ states('input_number.tanishq_room_light_level')
+            | int }}_stateful_scene
+        action: switch.turn_on
+    - conditions:
+      - condition: trigger
+        id: scene_switched
+      - condition: template
+        value_template: '{{ states(''input_number.tanishq_room_light_level'') | int
+          != trigger.entity_id.split(''_'')[-3] | int }}
+
+          '
+      sequence:
+      - data:
+          entity_id: input_number.tanishq_room_light_level
+          value: '{{ trigger.entity_id.split(''_'')[-3] | int }}'
+        action: input_number.set_value
+    - conditions:
+      - condition: trigger
+        id:
+        - no_scene_matched
+      sequence:
+      - sequence:
+        - variables:
+            matched_level: "{% set scenes = {\n  \"0\": state_attr(\"scene.tanishq_room_light_level_0\",
+              \"entity_id\") or [],\n  \"1\": state_attr(\"scene.tanishq_room_light_level_1\",
+              \"entity_id\") or [],\n  \"2\": state_attr(\"scene.tanishq_room_light_level_2\",
+              \"entity_id\") or [],\n  \"3\": state_attr(\"scene.tanishq_room_light_level_3\",
+              \"entity_id\") or [],\n  \"4\": state_attr(\"scene.tanishq_room_light_level_4\",
+              \"entity_id\") or []\n} %} {% set best_match = \"0\" %} {% set best_score
+              = -1 %} {% for level, entities in scenes.items() %}\n  {% set score
+              = 0 %}\n  {% for entity in entities %}\n    {% if states(entity) ==
+              state_attr(\"scene.tanishq_room_light_level_\" ~ level, \"state\")[entity]
+              %}\n      {% set score = score + 1 %}\n    {% endif %}\n  {% endfor
+              %}\n  {% if score > best_score %}\n    {% set best_match = level %}\n
+              \   {% set best_score = score %}\n  {% endif %}\n{% endfor %} {{ best_match
+              }}"
+          alias: Estimate scene
+        - data:
+            entity_id: input_number.tanishq_light_level
+            value: '{{ matched_level }}'
+          action: input_number.set_value
+          alias: Set slider
+        enabled: false
+  mode: restart
+- id: '1743331352955'
+  alias: 'Backup: Notification'
+  description: ''
+  use_blueprint:
+    path: jcwillox/notify_auto_backup.yaml
+    input:
+      notify_hass: true
+      devices: []
+- id: '1743497476941'
+  alias: Toggle Winter Mode
+  triggers:
+  - at: 00:00:00
+    trigger: time
+  conditions:
+  - condition: template
+    value_template: '{{ now().month == 4 and now().day == 1 or now().month == 10 and
+      now().day == 1 }}'
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ now().month == 10 and now().day == 1 }}'
+      sequence:
+      - target:
+          entity_id: input_boolean.winter_mode
+        action: input_boolean.turn_on
+    - conditions:
+      - condition: template
+        value_template: '{{ now().month == 4 and now().day == 1 }}'
+      sequence:
+      - target:
+          entity_id: input_boolean.winter_mode
+        action: input_boolean.turn_off

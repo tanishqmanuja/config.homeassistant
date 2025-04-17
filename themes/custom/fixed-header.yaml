@@ -1,0 +1,7 @@
+Fixed Header:
+  modes:
+    light:
+      app-header-background-color: '#FBFBFB'
+      app-header-text-color: 'var(--primary-color)'
+    dark:
+      app-header-background-color: '#121212'

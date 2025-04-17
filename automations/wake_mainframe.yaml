@@ -1,0 +1,10 @@
+id: wake_mainframe
+alias: Wake Mainframe
+trigger:
+  - platform: state
+    entity_id: input_button.wake_mainframe
+action:
+  - service: wake_on_lan.send_magic_packet
+    data:
+      broadcast_port: 9
+      mac: 18:c0:4d:39:b6:36

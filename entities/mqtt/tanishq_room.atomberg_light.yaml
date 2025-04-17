@@ -1,0 +1,6 @@
+button:
+  unique_id: tanishq_room_atomberg_light
+  name: "Tanishq Room Atomberg Light"
+  command_topic: cmnd/tasmota_irbridge01/IRsend
+  payload_press: '{"Protocol":"NEC","Bits":32,"Data":"0xCFE916","DataLSB":"0xF39768","Repeat":0}'
+  qos: 0

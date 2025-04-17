@@ -1,0 +1,8 @@
+language: "en"
+intents:
+  IncrementInputNumber:
+    data:
+      - sentences:
+          - "(increment|increase|raise) [the] {name}"
+        requires_context:
+          domain: input_number

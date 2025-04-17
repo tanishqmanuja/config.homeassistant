@@ -1,0 +1,4 @@
+sensor:
+  name: Ideapad Charging Status
+  command: "cat /sys/class/power_supply/BAT1/status"
+  scan_interval: 1

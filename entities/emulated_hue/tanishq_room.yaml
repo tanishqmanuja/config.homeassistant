@@ -1,0 +1,11 @@
+light.tanishq_room_switcher_ch_b:
+  name: Tanishq Room Cove Light
+  hidden: false
+
+light.tanishq_room_switcher_ch_c:
+  name: Tanishq Room Ceiling Light 2
+  hidden: false
+
+light.tanishq_room_switcher_ch_d:
+  name: Tanishq Room Ceiling Light 1
+  hidden: false

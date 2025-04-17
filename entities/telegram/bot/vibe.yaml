@@ -1,0 +1,4 @@
+platform: polling
+api_key: !secret TG_VIBE_API_KEY
+allowed_chat_ids:
+  - 1418463077

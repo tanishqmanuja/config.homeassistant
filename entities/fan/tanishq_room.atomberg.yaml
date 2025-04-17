@@ -1,0 +1,9 @@
+platform: smartir
+name: Tanishq Room Atomberg
+unique_id: tanishq_room_atomberg
+device_code: 1175
+# availability_sensor: sensor.ir_bridge_ssid
+# availability_template: "{{ not is_state('sensor.ir_bridge_ssid', 'unavailable') }}"
+controller_data:
+  controller_type: MQTT
+  mqtt_topic: cmnd/tasmota_irbridge01/IRsend

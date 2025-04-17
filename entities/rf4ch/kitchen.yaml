@@ -1,0 +1,15 @@
+name: Kitchen Switcher
+code:
+  channel_a: "100011001001111001100110"
+  channel_b: "101100101011100101010010"
+  channel_c: "100100111000010001110011"
+  channel_d: "101101011011111101010111"
+  channel_on: "101100001011101101010001"
+  channel_off: "101111011011000001011011"
+service:
+  id: esphome.rfbridge01_transmit
+  data:
+    repeat: 4
+transmission_gap: 0.25
+options:
+  stateless: true

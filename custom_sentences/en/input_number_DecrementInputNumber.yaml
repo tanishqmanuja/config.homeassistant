@@ -1,0 +1,8 @@
+language: "en"
+intents:
+  DecrementInputNumber:
+    data:
+      - sentences:
+          - "(decrement|decrease|lower) [the] {name}"
+        requires_context:
+          domain: input_number

@@ -1,0 +1,5 @@
+sensor:
+  name: Ideapad Charging Percentage
+  command: "cat /sys/class/power_supply/BAT1/capacity"
+  device_class: battery
+  unit_of_measurement: "%"
