@@ -1,5 +1,5 @@
 name: Dhwani Room Switcher
-code: 
+code:
   prefix: "00001101000110000010"
   channel_a: "0010"
   channel_b: "1000"
@@ -10,6 +10,6 @@ code:
 service:
   id: esphome.rfbridge01_transmit
   data:
-    repeat: 6
+    repeat: 5
 transmission_gap: 0.3
 # availability_template: "{{ is_state('binary_sensor.rfbridge01_status','on') }}"

@@ -66,36 +66,54 @@ tanishq_room_toggle_auto:
         count > 0 }}'
       alias: Any light is on in Tanishq Room
     then:
-    - action: button.press
+    - action: script.turn_on
       metadata: {}
       data: {}
       target:
-        entity_id: button.tanishq_room_switcher_off
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 1
-        milliseconds: 0
-    - action: light.turn_off
-      metadata: {}
-      data: {}
-      target:
-        area_id: tanishq_room
+        entity_id: script.tanishq_room_off_auto
     else:
     - action: script.turn_on
       metadata: {}
       data: {}
       target:
-        entity_id: script.tanishq_room_set_light_auto
-    - if:
-      - condition: state
-        entity_id: input_boolean.winter_mode
-        state: 'off'
-      then:
-      - action: fan.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: fan.tanishq_room_switcher_ch_a
+        entity_id: script.tanishq_room_on_auto
   alias: 'Tanishq Room: Toggle (Auto)'
+  description: ''
+tanishq_room_on_auto:
+  sequence:
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.tanishq_room_set_light_auto
+  - if:
+    - condition: state
+      entity_id: input_boolean.winter_mode
+      state: 'off'
+    then:
+    - action: fan.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: fan.tanishq_room_switcher_ch_a
+  alias: 'Tanishq Room: On (Auto)'
+  description: ''
+tanishq_room_off_auto:
+  sequence:
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.tanishq_room_switcher_off
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      area_id: tanishq_room
+  alias: 'Tanishq Room: Off (Auto)'
   description: ''

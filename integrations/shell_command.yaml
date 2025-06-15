@@ -1,0 +1,2 @@
+---
+shell_command: !include_dir_named ../entities/shell_command

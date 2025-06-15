@@ -1,0 +1,5 @@
+switch:
+  name: Jellyfin (Mainframe)
+  unique_id: mainframe_jellyfin
+  command_on: ssh -F /config/.ssh/config mainframe "psexec -nobanner -d -i 1 \"C:\\Program Files\\Jellyfin\\Server\\jellyfin-windows-tray\\Jellyfin.Windows.Tray.exe\""
+  command_off: ssh -F /config/.ssh/config mainframe "Stop-Process -Name jellyfin -Force -ErrorAction SilentlyContinue; Stop-Process -Name Jellyfin.Windows.Tray -Force -ErrorAction SilentlyContinue"

@@ -4,6 +4,10 @@
 # Env
 secrets.yaml
 
+# SSH
+.ssh/**
+!.ssh/config
+
 # Backup
 backups
 

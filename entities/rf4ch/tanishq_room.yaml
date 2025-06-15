@@ -1,5 +1,5 @@
 name: Tanishq Room Switcher
-code: 
+code:
   prefix: "10111010100101100100"
   channel_a: "0010"
   channel_b: "1000"

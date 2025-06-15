@@ -211,16 +211,16 @@
   - alias: Ask to skip or activate the protocol
     action: notify.mobile_app_oneplus_5
     data:
-      title: Sundown Protocol
-      message: Is about to be activated in {{dynamic_offset_minutes}} mins. Do you
-        want to skip this today?
+      title: Sundown Lighting
       data:
         actions:
         - action: '{{ action_skip }}'
-          title: Skip
+          title: Skip Today
         - action: '{{ action_activate }}'
           title: Activate Now
         tag: '{{ TAG }}'
+      message: It's almost sunset! The cozy evening lights will turn on in about {{dynamic_offset_minutes}}
+        minutes. Would you like to skip it for today?
   - alias: Wait for a response
     wait_for_trigger:
     - event_type: mobile_app_notification_action
@@ -273,7 +273,7 @@
     - condition: state
       entity_id: light.tanishq_room_switcher_ch_c
       state: 'on'
-    enabled: false
+    enabled: true
   actions:
   - alias: Set up variables for the actions
     variables:
@@ -283,15 +283,16 @@
   - alias: Ask to skip or activate the protocol
     action: notify.mobile_app_oneplus_5
     data:
-      title: Sleep Protect Protocol
-      message: Is about to be activated. Do you want to skip this today?
       data:
         actions:
         - action: '{{ action_skip }}'
-          title: Skip
+          title: Not Tonight
         - action: '{{ action_activate }}'
-          title: Activate Now
+          title: Dim Now
         tag: '{{ TAG }}'
+      title: Wind Down Lighting
+      message: Let’s soften the lights to help you wind down for the night. Would
+        you like to dim them now?
   - alias: Wait for a response
     wait_for_trigger:
     - event_type: mobile_app_notification_action
@@ -323,13 +324,15 @@
         data:
           tag: '{{ TAG }}'
     - if:
-      - condition: state
-        entity_id: light.tanishq_room_switcher_ch_d
-        state: 'on'
-        enabled: true
-      - condition: state
-        entity_id: light.tanishq_room_switcher_ch_c
-        state: 'on'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: light.tanishq_room_switcher_ch_c
+          state: 'on'
+        - condition: state
+          entity_id: light.tanishq_room_switcher_ch_d
+          state: 'on'
+          enabled: true
       then:
       - action: switch.turn_on
         metadata: {}

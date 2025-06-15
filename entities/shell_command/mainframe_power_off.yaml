@@ -1,0 +1,1 @@
+ssh -F /config/.ssh/config mainframe "shutdown /s /f"

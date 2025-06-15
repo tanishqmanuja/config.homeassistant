@@ -4,3 +4,4 @@ frontend:
   extra_module_url:
     - /hacsfiles/lovelace-card-mod/card-mod.js/local/card-mod.js
     - /local/community/custom-brand-icons/custom-brand-icons.js
+    - /hacsfiles/ha-material-you-utilities/material-you-utilities.min.js
