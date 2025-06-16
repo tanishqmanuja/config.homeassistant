@@ -1,0 +1,11 @@
+# Substitutions: DEVICE_NAME, FRIENDLY_NAME
+---
+esphome:
+  name: $DEVICE_NAME
+  friendly_name: $FRIENDLY_NAME
+
+packages:
+  wifi: !include wifi.yaml
+  ota: !include ota.yaml
+  logger: !include ./logger/default.yaml
+  api: !include api.yaml

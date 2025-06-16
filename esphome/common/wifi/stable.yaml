@@ -1,0 +1,5 @@
+---
+wifi:
+  output_power: 8.5dB
+  fast_connect: true
+  power_save_mode: none

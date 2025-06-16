@@ -1,0 +1,6 @@
+# Secrets: ESPHOME_API_ENC_KEY
+# Docs: https://esphome.io/components/api.html
+---
+api:
+  encryption:
+    key: !secret ESPHOME_API_ENC_KEY

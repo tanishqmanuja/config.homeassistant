@@ -1,0 +1,30 @@
+# Secrets: WIFI_SSID, WIFI_PASSWORD, ROUTER_GATEWAY, ESPHOME_FALLBACK_AP_PASSWORD
+# Substitutions: IP, GATEWAY, FRIENDLY_NAME
+# Docs: https://esphome.io/components/wifi.html
+---
+substitutions:
+  GATEWAY: !secret ROUTER_GATEWAY
+
+wifi:
+  # ssid: !secret WIFI_SSID
+  # password: !secret WIFI_PASSWORD
+  # manual_ip:
+  #   static_ip: $IP
+  #   gateway: $GATEWAY
+  #   subnet: 255.255.255.0
+  networks:
+    - ssid: !secret WIFI_SSID
+      password: !secret WIFI_PASSWORD
+      bssid: !secret WIFI_BSSID
+      manual_ip:
+        static_ip: $IP
+        gateway: $GATEWAY
+        subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ESPHome $FRIENDLY_NAME
+    password: !secret ESPHOME_FALLBACK_AP_PASSWORD
+
+# Docs: https://esphome.io/components/captive_portal.html
+captive_portal:

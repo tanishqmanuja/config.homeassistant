@@ -1,0 +1,16 @@
+---
+sensor:
+  - platform: wifi_signal
+    name: WiFi Strength
+    unit_of_measurement: "%"
+    entity_category: "diagnostic"
+    filters:
+      - lambda: |-
+          if(x <= -100){
+            return  0;
+          } else if (x >= -50) {
+            return 100;
+          } else {
+            return 2 * (x + 100);
+          }
+    update_interval: 60s

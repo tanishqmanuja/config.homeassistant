@@ -1,0 +1,31 @@
+substitutions:
+  IP: 192.168.0.65
+  DEVICE_NAME: rfbridge01
+  FRIENDLY_NAME: RF Bridge 01
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/nodemcu-32s.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+  sensor.status: !include ./common/sensor/status.yaml
+
+preferences:
+  flash_write_interval: 5min
+
+remote_transmitter:
+  pin: 16
+  carrier_duty_percent: 100%
+
+api:
+  services:
+    - service: transmit
+      variables:
+        code: string
+        repeat: int
+      then:
+        - remote_transmitter.transmit_rc_switch_raw:
+            protocol: 1
+            code: !lambda "return code;"
+            repeat:
+              times: !lambda "return repeat;"
+              wait_time: 0s

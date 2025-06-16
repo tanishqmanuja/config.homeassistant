@@ -1,0 +1,91 @@
+substitutions:
+  IP: 192.168.0.69
+  DEVICE_NAME: desklight01
+  FRIENDLY_NAME: Desk Light 01
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/esp01.yaml
+  logger.disable: !include ./common/logger/disable.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+  sensor.wifi-signal: !include ./common/sensor/wifi-signal.yaml
+
+esp8266:
+  restore_from_flash: false
+  early_pin_init: false
+
+wifi:
+  reboot_timeout: 5min
+  on_disconnect:
+    - wifi.disable:
+    - delay: 1s
+    - wifi.enable:
+
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - light.turn_on:
+          id: led_strip
+          brightness: 50%
+
+output:
+  - platform: esp8266_pwm
+    id: led_strip_output
+    pin:
+      number: GPIO2
+      inverted: true
+    frequency: 1000Hz
+    zero_means_zero: true
+
+light:
+  - platform: monochromatic
+    id: led_strip
+    output: led_strip_output
+    name: LED Strip
+    restore_mode: ALWAYS_ON
+    gamma_correct: 1.8
+    default_transition_length: 0.75s
+    effects:
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          update_interval: 2s
+      - pulse:
+          name: "Super Slow Pulse"
+          transition_length: 1.5s
+          update_interval: 9s
+      - pulse:
+          name: "Slow Glow Pulse"
+          transition_length: 1.5s
+          update_interval: 9s
+          min_brightness: 40%
+          max_brightness: 75%
+      - pulse:
+          name: "Faded Glow Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 2s
+          update_interval: 4s
+          min_brightness: 20%
+          max_brightness: 40%
+      - pulse:
+          name: "Asymmetrical Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 500ms
+          update_interval: 1.5s
+
+# DISABLE UNUSED PINS
+binary_sensor:
+  - platform: gpio
+    id: unused_gpio_15
+    pin:
+      number: GPIO15
+      mode: INPUT_PULLUP

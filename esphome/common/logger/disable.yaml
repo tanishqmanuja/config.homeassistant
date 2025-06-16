@@ -1,0 +1,4 @@
+---
+logger:
+  level: NONE
+  baud_rate: 0
