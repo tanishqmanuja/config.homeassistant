@@ -32,3 +32,6 @@ debug
 .storage
 home-assistant.log*
 home-assistant*.db*
+
+# Extra Addons
+.addons
