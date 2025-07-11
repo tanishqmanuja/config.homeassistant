@@ -1,5 +1,5 @@
 substitutions:
-  IP: 192.168.0.69
+  IP: 192.168.29.69
   DEVICE_NAME: desklight01
   FRIENDLY_NAME: Desk Light 01
 
@@ -29,6 +29,14 @@ esphome:
           id: led_strip
           brightness: 50%
 
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [ ddp ]
+
+ddp:
+
 output:
   - platform: esp8266_pwm
     id: led_strip_output
@@ -40,13 +48,14 @@ output:
 
 light:
   - platform: monochromatic
-    id: led_strip
     output: led_strip_output
+    id: led_strip
     name: LED Strip
     restore_mode: ALWAYS_ON
     gamma_correct: 1.8
     default_transition_length: 0.75s
     effects:
+      - ddp:
       - pulse:
       - pulse:
           name: "Fast Pulse"
