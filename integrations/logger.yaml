@@ -11,6 +11,10 @@ logger:
       # Ok, Tell HACS not me...
       - "Detected that custom integration 'hacs' accesses"
 
+    homeassistant.helpers.entity_component:
+      # Sometimes my WLED devices are unreachable.
+      - "Force update failed."
+
     homeassistant.util.yaml.loader:
       # I use YAML anchors and aliasses, causing duplicate keys in YAML.
       # For this use-case, that is on purpose, as an alias is used, but

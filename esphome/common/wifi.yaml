@@ -6,20 +6,12 @@ substitutions:
   GATEWAY: !secret ROUTER_GATEWAY
 
 wifi:
-  # ssid: !secret WIFI_SSID
-  # password: !secret WIFI_PASSWORD
-  # manual_ip:
-  #   static_ip: $IP
-  #   gateway: $GATEWAY
-  #   subnet: 255.255.255.0
-  networks:
-    - ssid: !secret WIFI_SSID
-      password: !secret WIFI_PASSWORD
-      bssid: !secret WIFI_BSSID
-      manual_ip:
-        static_ip: $IP
-        gateway: $GATEWAY
-        subnet: 255.255.255.0
+  ssid: !secret WIFI_SSID
+  password: !secret WIFI_PASSWORD
+  manual_ip:
+    static_ip: $IP
+    gateway: $GATEWAY
+    subnet: 255.255.255.0
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:

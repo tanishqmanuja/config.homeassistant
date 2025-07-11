@@ -1,0 +1,1 @@
+ssh -F /config/.ssh/config mainframe "psexec -nobanner -i 1 wscript.exe D:\\Scripts\\open-folder-fg.vbs '{{ path | replace('\\', '\\\\') }}'"

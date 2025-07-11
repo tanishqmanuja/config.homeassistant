@@ -117,3 +117,67 @@ tanishq_room_off_auto:
       area_id: tanishq_room
   alias: 'Tanishq Room: Off (Auto)'
   description: ''
+harry_potter_time:
+  sequence:
+  - parallel:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.tanishq_room_movie_lighting_stateful_scene
+    - action: shell_command.mainframe_open_folder
+      data:
+        path: E:\Movies & Shows\Harry Potter
+    - sequence:
+      - action: scene.create
+        metadata: {}
+        data:
+          scene_id: before
+          snapshot_entities:
+          - media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+      - action: media_player.volume_set
+        metadata: {}
+        data:
+          volume_level: 1
+        target:
+          entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+      - action: media_player.play_media
+        metadata:
+          title: hedwigs-theme.mp3
+          thumbnail:
+          media_class: music
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+          - media_content_type: ''
+            media_content_id: media-source://media_source/sounds/others
+        data:
+          media_content_id: media-source://media_source/sounds/others/hedwigs-theme.mp3
+          media_content_type: audio/mpeg
+        target:
+          entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 40
+          milliseconds: 0
+      - action: media_player.media_stop
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+      - action: media_player.clear_playlist
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+      - action: scene.turn_on
+        metadata: {}
+        data:
+          entity_id: scene.before
+      alias: Play Hedwigs Theme
+  alias: Harry Potter Time
+  description: ''
+  icon: mdi:deathly-hallows

@@ -1,0 +1,14 @@
+name: Tanishq Room Secondary Switcher
+code:
+  prefix: "00000001000000001011"
+  channel_a: "0010"
+  channel_b: "1000"
+  channel_c: "0001"
+  channel_d: "0100"
+  channel_on: "1100"
+  channel_off: "0011"
+service:
+  id: esphome.rfbridge01_transmit
+  data:
+    repeat: 4
+transmission_gap: 0.25

@@ -1,0 +1,2 @@
+url: !secret dynv6_auto_update_url
+method: get

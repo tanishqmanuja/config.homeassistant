@@ -482,3 +482,97 @@
       - target:
           entity_id: input_boolean.winter_mode
         action: input_boolean.turn_off
+- id: '1751211994881'
+  alias: Unavailable Alert
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - light.tanishq_room_wipro_cct_smart
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - light.rgbcw_lightbulb
+    to: unavailable
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  conditions:
+  - condition: time
+    before: '23:59:00'
+    after: 09:00:00
+  actions:
+  - alias: Play Alert
+    sequence:
+    - action: scene.create
+      metadata: {}
+      data:
+        scene_id: before
+        snapshot_entities:
+        - media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+    - action: media_player.volume_set
+      metadata: {}
+      data:
+        volume_level: 1
+      target:
+        entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+    - action: media_player.play_media
+      metadata:
+        title: mixkit-8-bit-lose-2031.wav
+        thumbnail:
+        media_class: music
+        children_media_class:
+        navigateIds:
+        - {}
+        - media_content_type: app
+          media_content_id: media-source://media_source
+        - media_content_type: ''
+          media_content_id: media-source://media_source/sounds/retro
+      data:
+        media_content_id: media-source://media_source/sounds/retro/mixkit-8-bit-lose-2031.wav
+        media_content_type: audio/x-wav
+      target:
+        entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 40
+        milliseconds: 0
+    - action: media_player.media_stop
+      metadata: {}
+      data: {}
+      target:
+        entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+    - action: media_player.clear_playlist
+      metadata: {}
+      data: {}
+      target:
+        entity_id: media_player.mopidy_http_server_on_tanishq_lenovo_ideapad_520s_14ikb_6680
+    - action: scene.turn_on
+      metadata: {}
+      data:
+        entity_id: scene.before
+  mode: single
+- id: '1751696033623'
+  alias: Update DynV6
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.myip_ipv6
+  conditions:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.myip_ipv6
+      state: unavailable
+  actions:
+  - action: rest_command.dynv6_update
+    data:
+      ipv6: '{{ states(''sensor.myip_ipv6'') }}'
+  mode: single
