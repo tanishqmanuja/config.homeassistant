@@ -1,0 +1,32 @@
+name: DDP
+update_interval: 0s
+lambda: |-
+  static std::unique_ptr<WiFiUDP> ddp_udp;
+
+  if (!ddp_udp) {
+    ddp_udp = make_unique<WiFiUDP>();
+    if (!ddp_udp->begin(4048)) {
+      return;
+    }
+  }
+
+  std::vector<uint8_t> payload;
+  while (uint16_t packet_size = ddp_udp->parsePacket()) {
+    payload.resize(packet_size);
+    if (!ddp_udp->read(&payload[0], payload.size())) {
+      continue;
+    }
+  }
+
+  if (payload.size() < 11) {  // Must contain at least one channel of data
+    return;
+  }
+
+  float brightness = payload[10] / 255.0f;
+
+  auto call = id(${id}).turn_on();
+  call.set_transition_length(0);
+  call.set_brightness(brightness);
+  call.set_publish(false);
+  call.set_save(false);
+  call.perform();

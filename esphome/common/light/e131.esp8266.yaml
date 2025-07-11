@@ -1,0 +1,6 @@
+esphome:
+  libraries:
+    - ESP8266WiFi
+    - ESPAsyncE131
+  includes:
+    - ./common/include/e131/E131.h

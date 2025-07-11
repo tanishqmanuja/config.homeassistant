@@ -1,0 +1,31 @@
+name: E1.31
+update_interval: 0s
+lambda: |-
+  static int state = 0;
+  static ESPAsyncE131 e131(1); // 1 universe
+  
+  if (state == 0) {
+    if (e131.begin(E131_MULTICAST, 1, 1))
+      state = 1;
+    else
+      return;
+  }
+  
+  if (e131.isEmpty()) return;
+    
+  e131_packet_t packet;
+  e131.pull(&packet);
+  
+  uint8_t r = packet.property_values[1];
+  uint8_t g = packet.property_values[2];
+  uint8_t b = packet.property_values[3];
+
+  uint16_t weighted = r * 5 + g * 9 + b * 2;
+  float brightness = weighted / (255.0f * 16.0f);
+  
+  auto call = id(${id}).turn_on();
+  call.set_transition_length(0);
+  call.set_brightness(brightness); 
+  call.set_publish(false);
+  call.set_save(false);
+  call.perform();
