@@ -1,0 +1,9 @@
+wifi:
+  networks:
+    - ssid: !secret WIFI_SSID
+      password: !secret WIFI_PASSWORD
+      bssid: !secret WIFI_BSSID
+      manual_ip:
+        static_ip: $IP
+        gateway: $GATEWAY
+        subnet: 255.255.255.0
