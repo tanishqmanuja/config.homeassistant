@@ -2,7 +2,7 @@
 # Substitutions: IP, GATEWAY, FRIENDLY_NAME
 # Docs: https://esphome.io/components/wifi.html
 ---
-substitutions:
+defaults:
   GATEWAY: !secret ROUTER_GATEWAY
 
 wifi:

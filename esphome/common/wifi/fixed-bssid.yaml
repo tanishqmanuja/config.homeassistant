@@ -1,3 +1,7 @@
+---
+defaults:
+  GATEWAY: !secret ROUTER_GATEWAY
+
 wifi:
   networks:
     - ssid: !secret WIFI_SSID
