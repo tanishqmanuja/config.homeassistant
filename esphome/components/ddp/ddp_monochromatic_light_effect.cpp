@@ -45,7 +45,11 @@ void DDPMonochromaticLightEffect::apply() {
 
     auto call = this->state_->turn_on();
 
-    call.set_brightness_if_supported(this->state_->remote_values.get_brightness());
+    if(this->blank_on_idle_) {
+      call.set_brightness_if_supported(0.0f);
+    } else {
+      call.set_brightness_if_supported(this->state_->remote_values.get_brightness());
+    }
 
     call.set_publish(false);
     call.set_save(false);

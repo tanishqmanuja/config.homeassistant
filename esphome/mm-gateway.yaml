@@ -1,0 +1,55 @@
+substitutions:
+  baud_rate: 115200
+  meshmesh_channel: 3
+
+external_components:
+  - source: github://persuader72/esphome@mm_dev
+    components: [ meshmesh, network, socket ]
+  - source: components
+    components: [ esphome ]
+
+esphome:
+  name: mm-gateway
+  friendly_name: MM Gateway
+  comment: MeshMeshGo
+  project:
+    name: EspMeshMesh.MeshMesh Gateway
+    version: 1.0.0
+
+esp8266:
+  board: nodemcuv2  
+  framework:
+    version: 3.1.2
+
+logger:
+  level: INFO
+  baud_rate: 0
+
+api:
+  reboot_timeout: 0s
+
+mdns:
+  disabled: true
+
+socket:
+  implementation: meshmesh_esp8266
+
+meshmesh:
+  baud_rate: $baud_rate
+  rx_buffer_size: 2048
+  tx_buffer_size: 4096
+  password: !secret meshmesh_password
+  channel: $meshmesh_channel
+
+output:
+  - platform: gpio
+    id: onboard_led_output
+    pin:
+      number: GPIO2
+      inverted: true
+
+light:
+  - platform: binary
+    id: onboard_led
+    name: Onboard LED
+    output: onboard_led_output

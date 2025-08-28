@@ -1,0 +1,248 @@
+substitutions:
+  IP: 192.168.29.83
+  DEVICE_NAME: dimled02
+  FRIENDLY_NAME: DimLED 02
+  DEFAULT_BRIGHTNESS: 50%
+
+  min_brightness: "0.05"    # lowest brightness (0.0 – 1.0)
+  max_brightness: "1.0"     # highest brightness (0.0 – 1.0)
+  min_delay: "100"          # fastest flash period in ms (weak RSSI)
+  max_delay: "1000"         # slowest flash period in ms (strong RSSI)
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/esp01.yaml
+  uart.disable: !include ./common/logger/disable.uart.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+  wifi.no-reboot: !include ./common/wifi/no-reboot.yaml
+
+esp8266:
+  restore_from_flash: false
+  early_pin_init: false
+
+esphome:
+  comment: DimLED Mark II
+  project:
+      name: TQLabs.DimLED
+      version: "2.0.0"
+  # on_boot:
+  #   priority: -100
+  #   then:
+  #     - light.turn_on:
+  #         id: led_strip
+  #         brightness: $DEFAULT_BRIGHTNESS
+
+external_components:
+  - source: github://tanishqmanuja/esphome-components
+    components: [ ddp ]
+
+ddp:
+
+output:
+  - platform: esp8266_pwm
+    id: led_strip_output
+    pin:
+      number: GPIO3
+      inverted: false
+    frequency: 1000Hz
+    zero_means_zero: true
+
+switch:
+  - platform: gpio
+    pin:
+      number: GPIO1
+      inverted: true
+    id: internal_led
+    name: Internal LED
+
+wifi:
+  on_connect:
+    then:
+      - light.turn_on:
+          id: led_strip
+          effect: RSSI
+      - repeat: 
+          count: 2
+          then:
+            - switch.turn_on: internal_led
+            - delay: 150ms
+            - switch.turn_off: internal_led
+            - delay: 150ms
+      - switch.turn_on: internal_led
+  on_disconnect:
+    then:
+      - light.turn_off: led_strip
+      - repeat: 
+          count: 2
+          then:
+            - switch.turn_on: internal_led
+            - delay: 150ms
+            - switch.turn_off: internal_led
+            - delay: 150ms
+      - switch.turn_off: internal_led
+
+sensor:
+  - platform: wifi_signal
+    id: rssi
+    name: RSSI
+    entity_category: "diagnostic"
+    update_interval: 2s
+
+# sensor:
+#   - platform: wifi_signal
+#     id: wifi_strength
+#     name: WiFi Signal
+#     update_interval: 2s
+
+# globals:
+#   - id: led_state
+#     type: bool
+#     restore_value: no
+#     initial_value: "false"
+
+# interval:
+#   - interval: 100ms
+#     then:
+#       - lambda: |-
+#           if (id(led_strip).remote_values.is_on()) {
+#             static unsigned long last_toggle = 0;
+#             unsigned long now = millis();
+
+#             float rssi = id(wifi_strength).state;
+
+#             // normalize -100 → 0.0 .. -30 → 1.0
+#             float norm = (rssi + 100) / 70.0;
+#             if (norm < 0.0) norm = 0.0;
+#             if (norm > 1.0) norm = 1.0;
+
+#             // perceptual brightness (gamma curve)
+#             float brightness = powf(norm, 3.0);
+#             if (brightness < 0.05) brightness = 0.05;
+
+#             // flash speed mapping: 1000 ms (weak) → 100 ms (strong)
+#             int delay_ms = (int)(1000 - norm * 900);
+
+#             if (now - last_toggle >= (unsigned long)delay_ms) {
+#               last_toggle = now;
+#               id(led_state) = !id(led_state);
+
+#               auto call = id(led_strip).make_call();
+#               if (id(led_state)) {
+#                 call.set_brightness(brightness);
+#                 call.set_state(true);
+#               } else {
+#                 call.set_state(false);
+#               }
+#               call.set_publish(false);  // silent
+#               call.set_save(false);     // no persist
+#               call.perform();
+#             }
+#           }
+
+# sensor:
+#   - platform: wifi_signal
+#     name: WiFi Strength
+#     unit_of_measurement: "%"
+#     entity_category: "diagnostic"
+#     update_interval: 2s
+#     filters:
+#       # Smooth out RSSI first
+#       - exponential_moving_average:
+#           alpha: 0.1
+#           send_every: 1
+#       # Map RSSI → normalized brightness 0.0–1.0
+#       - lambda: |-
+#           // Clamp RSSI range -100 to -30
+#           if (x <= -100) {
+#             return 0.0;
+#           } else if (x >= -30) {
+#             return 1.0;
+#           } else {
+#             float norm = (x + 100) / 70.0;  // linear 0.0–1.0
+#             // Apply perceptual curve (gamma)
+#             return powf(norm, 2.2);  // 2.2 ≈ human brightness perception
+#           }
+#     on_value:
+#       - if:
+#           condition:
+#             light.is_on: led_strip
+#           then:
+#             - light.turn_off: led_strip
+#             - delay: 0.5s
+#             - light.turn_on:
+#                 id: led_strip
+#                 brightness: !lambda "return x;"   # already 0.0–1.0
+
+light:
+  - platform: monochromatic
+    output: led_strip_output
+    id: led_strip
+    name: LED Strip
+    restore_mode: ALWAYS_OFF
+    gamma_correct: 1.8
+    default_transition_length: 0.75s
+    effects:
+      - lambda: !include common/light/monochromatic/effects/rssi.yaml
+      - ddp:
+      - flicker:
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          update_interval: 2s
+      - pulse:
+          name: "Faded Glow Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 2s
+          update_interval: 4s
+          min_brightness: 20%
+          max_brightness: 40%
+      - strobe:
+          name: "Strobe"
+          colors:
+            - state: true
+              brightness: $DEFAULT_BRIGHTNESS
+              duration: 100ms
+            - state: false
+              duration: 100ms
+
+binary_sensor:
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - light.toggle: led_strip
+      - min_length: 750ms
+        max_length: 5000ms
+        then:
+          - light.turn_on:
+              id: led_strip
+              effect: Strobe
+          - delay: 0.6s
+          - light.turn_off: led_strip
+          - light.turn_on:
+              id: led_strip
+              effect: DDP
+
+  # DISABLE UNUSED PINS
+  - platform: gpio
+    id: unused_gpio_15
+    pin:
+      number: GPIO15
+      mode: INPUT_PULLUP
+    use_interrupt: false

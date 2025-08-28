@@ -1,0 +1,80 @@
+external_components:
+  - source: github://tanishqmanuja/esphome-components
+    components: [ ddp ]
+
+ddp:
+
+output:
+  - platform: esp8266_pwm
+    id: led_strip_output
+    pin:
+      number: GPIO3
+      inverted: false
+    frequency: 1000Hz
+    zero_means_zero: true
+
+light:
+  - platform: monochromatic
+    output: led_strip_output
+    id: led_strip
+    name: LED Strip
+    icon: mdi:led-strip-variant
+    restore_mode: ALWAYS_ON
+    gamma_correct: 1.8
+    default_transition_length: 0.75s
+    effects:
+      - ddp:
+      - flicker:
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          update_interval: 2s
+      - pulse:
+          name: "Faded Glow Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 2s
+          update_interval: 4s
+          min_brightness: 20%
+          max_brightness: 40%
+      - strobe:
+          name: "Strobe"
+          colors:
+            - state: true
+              brightness: ${ default_brightness | d("50%") }
+              duration: 100ms
+            - state: false
+              duration: 100ms
+
+binary_sensor:
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - light.toggle: led_strip
+      - min_length: 750ms
+        max_length: 5000ms
+        then:
+          - light.turn_on:
+              id: led_strip
+              effect: Strobe
+          - delay: 0.6s
+          - light.turn_off: led_strip
+          - light.turn_on:
+              id: led_strip
+              effect: DDP

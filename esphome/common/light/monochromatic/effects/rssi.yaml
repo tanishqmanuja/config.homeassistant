@@ -1,0 +1,65 @@
+name: RSSI
+update_interval: 20ms
+lambda: |-
+  float r = id(rssi).state;
+  if (isnan(r)) return;
+
+  const float RSSI_MIN = -100.0f;
+  const float RSSI_MAX = 0.0f;
+  const float RSSI_EXCELLENT = -30.0f;
+
+  // Clamp RSSI to [RSSI_MIN, RSSI_MAX]
+  if (r < RSSI_MIN) r = RSSI_MIN;
+  if (r > RSSI_MAX) r = RSSI_MAX;
+
+  // Brightness scaling
+  const float MIN_B = ${min_brightness};
+  const float MAX_B = ${max_brightness};
+  float norm = (r - RSSI_MIN) / (RSSI_MAX - RSSI_MIN);
+  float scaled = powf(norm, 1.5f);
+  float brightness = MIN_B + scaled * (MAX_B - MIN_B);
+
+  // === Solid Mode ===
+  if (r > RSSI_EXCELLENT) {
+    auto call = id(led_strip).turn_on();
+    call.set_brightness(brightness);
+    call.set_publish(false);
+    call.set_save(false);
+    call.perform();
+    return;
+  }
+
+  // Clamp RSSI to [RSSI_MIN, RSSI_EXCELLENT]
+  if (r > RSSI_EXCELLENT) {
+    r = RSSI_EXCELLENT;
+  }
+
+  // === Flash Mode ===
+  const uint32_t MIN_D = ${min_delay};
+  const uint32_t MAX_D = ${max_delay};
+  norm = (r - RSSI_MIN) / (RSSI_EXCELLENT - RSSI_MIN);
+  uint32_t delay_ms = (uint32_t)(MAX_D - norm * (MAX_D - MIN_D));
+
+  static uint32_t last = 0;
+  static bool phase = false;
+  uint32_t now = millis();
+  if (now - last >= delay_ms) {
+    last = now;
+    phase = !phase;
+  }
+
+  auto call = id(led_strip).turn_on();
+
+  if (phase) {
+    // ON → instant
+    call.set_brightness(brightness);
+    call.set_transition_length(0);
+  } else {
+    // OFF → slow roll-off
+    call.set_brightness(0.0f);
+    call.set_transition_length(50);
+  }
+
+  call.set_publish(false);
+  call.set_save(false);
+  call.perform();

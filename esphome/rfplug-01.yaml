@@ -3,9 +3,15 @@ substitutions:
   DEVICE_NAME: rfplug01
   FRIENDLY_NAME: RF Plug 01
 
+  PIN_RELAY_1: GPIO27
+  PIN_RELAY_2: GPIO26
+  PIN_RELAY_3: GPIO33
+  PIN_RELAY_4: GPIO32
+  PIN_RF_RECEIVER: GPIO16
+
 packages:
   base: !include ./common/base.yaml
-  board: !include ./common/board/esp32dev.yaml
+  board: !include ./common/board/esp32dev.idf.yaml
   wifi.stable: !include ./common/wifi/stable.yaml
   sensor.status: !include ./common/sensor/status.yaml
 
@@ -15,7 +21,7 @@ preferences:
 remote_receiver:
   id: rf_receiver
   pin:
-    number: GPIO4
+    number: $PIN_RF_RECEIVER
     mode:
       input: true
       pullup: true
@@ -85,7 +91,7 @@ binary_sensor:
 switch:
   - platform: gpio
     pin:
-      number: GPIO32
+      number: $PIN_RELAY_1
       inverted: true
       mode:
         output: true
@@ -96,7 +102,7 @@ switch:
 
   - platform: gpio
     pin:
-      number: GPIO33
+      number: $PIN_RELAY_2
       inverted: true
       mode:
         output: true
@@ -107,7 +113,7 @@ switch:
 
   - platform: gpio
     pin:
-      number: GPIO27
+      number: $PIN_RELAY_3
       inverted: true
       mode:
         output: true
@@ -118,7 +124,7 @@ switch:
 
   - platform: gpio
     pin:
-      number: GPIO26
+      number: $PIN_RELAY_4
       inverted: true
       mode:
         output: true

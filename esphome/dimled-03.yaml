@@ -1,44 +1,34 @@
 substitutions:
-  IP: 192.168.29.69
-  DEVICE_NAME: desklight01
-  FRIENDLY_NAME: Desk Light 01
+  IP: 192.168.29.84
+  DEVICE_NAME: dimled03
+  FRIENDLY_NAME: DimLED 03
 
 packages:
   base: !include ./common/base.yaml
   board: !include ./common/board/esp01.yaml
-  logger.disable: !include ./common/logger/disable.yaml
+  uart.disable: !include ./common/logger/disable.uart.yaml
   wifi.stable: !include ./common/wifi/stable.yaml
-  api.no-reboot: !include ./common/api/no-reboot.yaml
+  wifi.no-reboot: !include ./common/wifi/no-reboot.yaml
   sensor.wifi-signal: !include ./common/sensor/wifi-signal.yaml
 
 esp8266:
   restore_from_flash: false
   early_pin_init: false
 
-wifi:
-  reboot_timeout: 5min
-  on_disconnect:
-    - wifi.disable:
-    - delay: 1s
-    - wifi.enable:
-
 esphome:
-  esphome:
-  comment: DimLED Proto I
+  comment: DimLED Mark II
   project:
       name: TQLabs.DimLED
       version: "2.0.0"
   on_boot:
-    priority: 800
+    priority: 100
     then:
       - light.turn_on:
           id: led_strip
-          brightness: 50%
+          brightness: 100% 
 
 external_components:
-  - source:
-      type: local
-      path: components
+  - source: github://tanishqmanuja/esphome-components
     components: [ ddp ]
 
 ddp:
@@ -47,8 +37,8 @@ output:
   - platform: esp8266_pwm
     id: led_strip_output
     pin:
-      number: GPIO2
-      inverted: true
+      number: GPIO3
+      inverted: false
     frequency: 1000Hz
     zero_means_zero: true
 
@@ -74,16 +64,6 @@ light:
           name: "Slow Pulse"
           update_interval: 2s
       - pulse:
-          name: "Super Slow Pulse"
-          transition_length: 1.5s
-          update_interval: 9s
-      - pulse:
-          name: "Slow Glow Pulse"
-          transition_length: 1.5s
-          update_interval: 9s
-          min_brightness: 40%
-          max_brightness: 75%
-      - pulse:
           name: "Faded Glow Pulse"
           transition_length:
             on_length: 1s
@@ -91,17 +71,46 @@ light:
           update_interval: 4s
           min_brightness: 20%
           max_brightness: 40%
-      - pulse:
-          name: "Asymmetrical Pulse"
-          transition_length:
-            on_length: 1s
-            off_length: 500ms
-          update_interval: 1.5s
+      - strobe:
+          name: "Strobe"
+          colors:
+            - state: true
+              brightness: 50% 
+              duration: 100ms
+            - state: false
+              duration: 100ms
 
-# DISABLE UNUSED PINS
 binary_sensor:
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_click:
+      - min_length: 50ms
+        max_length: 500ms
+        then:
+          - light.toggle: led_strip
+      - min_length: 750ms
+        max_length: 5000ms
+        then:
+          - light.turn_on:
+              id: led_strip
+              effect: Strobe
+          - delay: 0.6s
+          - light.turn_off: led_strip
+          - light.turn_on:
+              id: led_strip
+              effect: DDP
+
+  # DISABLE UNUSED PINS
   - platform: gpio
     id: unused_gpio_15
     pin:
       number: GPIO15
       mode: INPUT_PULLUP
+    use_interrupt: false

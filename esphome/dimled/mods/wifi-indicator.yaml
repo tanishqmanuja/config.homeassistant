@@ -1,0 +1,28 @@
+switch:
+  - platform: gpio
+    pin:
+      number: GPIO1
+      inverted: true
+    id: internal_led
+
+wifi:
+  on_connect:
+    then:
+      - repeat: 
+          count: 2
+          then:
+            - switch.turn_on: internal_led
+            - delay: 150ms
+            - switch.turn_off: internal_led
+            - delay: 150ms
+      - switch.turn_on: internal_led
+  on_disconnect:
+    then:
+      - repeat: 
+          count: 2
+          then:
+            - switch.turn_on: internal_led
+            - delay: 150ms
+            - switch.turn_off: internal_led
+            - delay: 150ms
+      - switch.turn_off: internal_led

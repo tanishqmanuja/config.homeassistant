@@ -37,6 +37,7 @@ CONF_DDP_ID = "ddp_id"
 CONF_DDP_TIMEOUT = "timeout"
 CONF_DDP_DIS_GAMMA = "disable_gamma"
 CONF_DDP_SCALING = "brightness_scaling"
+CONF_DPP_BLANK_ON_IDLE = "blank_on_idle"
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
@@ -62,6 +63,7 @@ async def to_code(config):
         cv.Optional(CONF_DDP_TIMEOUT): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_DDP_DIS_GAMMA): cv.boolean,
         cv.Optional(CONF_DDP_SCALING): cv.one_of(*DDP_SCALING_MONO, upper=True),
+        cv.Optional(CONF_DPP_BLANK_ON_IDLE): cv.boolean,
     },
 )
 @register_rgb_effect(
@@ -101,5 +103,8 @@ async def ddp_light_effect_to_code(config, effect_id):
 
     if CONF_DDP_SCALING in config:
         cg.add(effect.set_scaling_mode(DDP_SCALING[config[CONF_DDP_SCALING]]))
+
+    if CONF_DPP_BLANK_ON_IDLE in config:
+        cg.add(effect.set_blank_on_idle(config[CONF_DPP_BLANK_ON_IDLE]))
 
     return effect

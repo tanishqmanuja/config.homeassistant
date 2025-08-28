@@ -1,0 +1,7 @@
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - light.turn_on:
+          id: led_strip
+          brightness: ${ boot_brightness | d("$default_brightness") | d("50%") }

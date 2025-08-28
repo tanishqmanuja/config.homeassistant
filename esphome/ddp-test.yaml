@@ -1,0 +1,170 @@
+substitutions:
+  DEVICE_NAME: ddptest
+  FRIENDLY_NAME: DDP Test
+
+packages:
+  ota: !include ./common/ota.yaml
+  api: !include ./common/api.yaml
+  logger: !include ./common/logger/default.yaml
+  board: !include ./common/board/nodemcuv2.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+
+esphome:
+  name: $DEVICE_NAME
+  friendly_name: ${ DEVICE_NAME | d("$FRIENDLY_NAME") }
+  includes:
+    - ./common/include/WifiUdp.h
+    - ./common/include/WLEDUtils.h
+  # on_boot:
+  #   priority: -100  # after WiFi is up
+  #   then:
+  #     - delay: 500ms  # optional: allow network to initialize
+  #     - light.turn_on:
+  #         id: my_light
+  #         effect: DDP
+
+wifi:
+  ssid: !secret WIFI_SSID
+  password: !secret WIFI_PASSWORD
+
+web_server:
+
+logger:
+  level: debug
+
+output:
+  - platform: esp8266_pwm
+    id: output_red
+    pin: 3
+  - platform: esp8266_pwm
+    id: output_green
+    pin: 5
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: 1
+  - platform: esp8266_pwm
+    id: output_cold_white
+    pin:
+      number: 2
+      inverted: true
+  - platform: esp8266_pwm
+    id: output_warm_white
+    pin: 4
+
+
+light:
+  - platform: rgbww
+    id: my_light
+    name: My Light
+    color_interlock: true
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    red: output_red
+    green: output_green
+    blue: output_blue
+    cold_white: output_cold_white
+    warm_white: output_warm_white 
+    constant_brightness: true
+    gamma_correct: 1.0
+    effects:
+      - lambda:
+          name: DDP
+          update_interval: 0s
+          lambda: |-
+            static std::unique_ptr<WiFiUDP> ddp_udp;
+            static float red = 0.0;
+            static float green = 0.0;
+            static float blue = 0.0;
+            static float white = 0.0;
+
+            if (!ddp_udp) {
+              ddp_udp = make_unique<WiFiUDP>();
+              if (!ddp_udp->begin(4048)) {
+                return;
+              }
+            }
+            
+            std::vector<uint8_t> payload;
+            while (uint16_t packet_size = ddp_udp->parsePacket()) {
+              payload.resize(packet_size);
+              if (!ddp_udp->read(&payload[0], payload.size())) {
+                continue;
+              }
+            }
+        
+            // RGBW packet from WLED has 14 bytes
+            if (payload.size() < 14) {
+              return;
+            }
+
+            ESP_LOGD("ddp", "RGBW: %d %d %d %d", payload[10], payload[11], payload[12], payload[13]);
+            red = (float)payload[10]/255.0f;
+            green = (float)payload[11]/255.0f;
+            blue = (float)payload[12]/255.0f;
+            white = (float)payload[13]/255.0f;
+            
+            auto call = id(my_light).turn_on();
+
+
+            // Software Interlock (RGB only works if WHITE is 0)
+            if (white > 0) {
+              call.set_color_mode_if_supported(ColorMode::COLD_WARM_WHITE);
+
+              uint8_t r = payload[10];
+              uint8_t g = payload[11];
+              uint8_t b = payload[12];
+
+              uint8_t max_rgb = std::max({r, g, b});
+              if (max_rgb > 0) {
+                float scale = 255.0f / max_rgb;
+                r = std::min(255, (int)(r * scale));
+                g = std::min(255, (int)(g * scale));
+                b = std::min(255, (int)(b * scale));
+              }
+
+              uint16_t kelvin = approximateKelvinFromRGB(r, g, b);
+              kelvin = std::clamp(kelvin, (uint16_t)2000, (uint16_t)6500);
+              float cw_ratio = (kelvin - 2000.0f) / (6500.0f - 2000.0f);  // 0 = warm, 1 = cool
+
+              float gamma = 2.2f;
+              float ch_bright_min = 0.05f;
+              float corrected_white = powf(white, gamma) * (1.0f - ch_bright_min) + ch_bright_min;
+
+              float cool = cw_ratio;
+              float warm = 1.0f - cw_ratio;
+
+              float max_cw = std::max(cool, warm);
+              float scale = corrected_white;
+              if (max_cw > 1.0f) {
+                scale /= max_cw;
+              }
+
+              cool *= scale;
+              warm *= scale;
+
+              call.set_cold_white_if_supported(cool);
+              call.set_warm_white_if_supported(warm);
+
+              call.set_red_if_supported(0.0f);
+              call.set_green_if_supported(0.0f);
+              call.set_blue_if_supported(0.0f);
+
+              call.set_brightness_if_supported(1.0f);
+            } else {
+              call.set_color_mode_if_supported(ColorMode::RGB);
+              call.set_red_if_supported(red);
+              call.set_green_if_supported(green);
+              call.set_blue_if_supported(blue);
+
+              call.set_white_if_supported(0.0f);
+              call.set_cold_white_if_supported(0.0f);
+              call.set_warm_white_if_supported(0.0f);
+
+              float max_rgb = std::max({red, green, blue});
+              call.set_brightness_if_supported(max_rgb);
+            }
+
+            call.set_transition_length(0);
+            call.set_publish(false);
+            call.set_save(false);
+            call.perform();

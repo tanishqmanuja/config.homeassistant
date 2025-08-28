@@ -1,0 +1,72 @@
+defaults:
+  gateway: !secret ROUTER_GATEWAY
+
+substitutions:
+  device_name: dimled
+  friendly_name: DimLED
+  default_brightness: 50%
+
+packages:
+  led-strip: !include ./led-strip.yaml
+
+esp8266:
+  board: esp01_1m
+  framework:
+    version: recommended
+  restore_from_flash: false
+  early_pin_init: false
+
+esphome:
+  name: $device_name
+  friendly_name: $friendly_name
+  # name: ${device_name | d("node")}
+  # friendly_name: ${friendly_name | d("Node")}
+  # name_add_mac_suffix: ${ "false" if device_name is defined else "true" }
+  comment: DimLED Mark II
+  project:
+      name: TQLabs.DimLED
+      version: "2.0.0"
+
+logger:
+  baud_rate: 0
+
+wifi:
+  ssid: !secret WIFI_SSID
+  password: !secret WIFI_PASSWORD
+  manual_ip:
+    static_ip: $ip
+    gateway: $gateway
+    subnet: 255.255.255.0
+  output_power: 8.5dB
+  fast_connect: true
+  power_save_mode: none
+  reboot_timeout: 0s
+
+  ap:
+    ssid: ESPHome $friendly_name
+    password: !secret ESPHOME_FALLBACK_AP_PASSWORD
+
+captive_portal:
+
+api:
+  encryption:
+    key: !secret ESPHOME_API_ENC_KEY
+
+ota:
+  platform: esphome
+
+sensor:
+  - platform: wifi_signal
+    name: RSSI
+    entity_category: "diagnostic"
+    update_interval: 60s
+    disabled_by_default: true
+
+# DISABLE UNUSED PINS
+binary_sensor:
+  - platform: gpio
+    id: unused_gpio_15
+    pin:
+      number: GPIO15
+      mode: INPUT_PULLUP
+    use_interrupt: false

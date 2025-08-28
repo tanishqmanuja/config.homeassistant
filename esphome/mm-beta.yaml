@@ -1,0 +1,88 @@
+substitutions:
+  meshmesh_channel: 3
+  remote_node_addr: 0x6C4D63
+  remote_switch_hash: 0x9184
+  remote_state_hash: 0x784A
+
+external_components:
+  - source: github://persuader72/esphome@mm_dev
+    components: [ meshmesh, network, socket, esphome ]
+  # - source: github://persuader72/esphome@mm_dev
+  #   components: [ network, socket ]
+  # - source: components
+  #   components: [ meshmesh ]
+  - source: components
+    components: [ esphome ]
+
+preferences:
+    flash_write_interval: 30sec
+
+esphome:
+  name: mm-beta
+  friendly_name: MM Beta
+  comment: MeshMeshGo
+  project:
+    name: EspMeshMesh.MeshMesh Device
+    version: 1.0.0
+
+esp8266:
+  board: nodemcuv2 
+  restore_from_flash : true
+  framework:
+    version: 3.1.2
+
+logger:
+  level: VERY_VERBOSE
+  baud_rate: 115200
+
+wifi:
+  ssid: MeshMesh
+  password: MeshMesh
+  enable_on_boot: false
+  use_address: 127.108.77.99
+
+api:
+  reboot_timeout: 0s
+
+ota:
+  platform: esphome
+  port: 3232
+
+mdns:
+  disabled: true
+
+socket:
+  implementation: meshmesh_esp8266
+
+meshmesh:
+  baud_rate: 0
+  rx_buffer_size: 0
+  tx_buffer_size: 0
+  password: !secret meshmesh_password
+  channel: $meshmesh_channel
+
+switch:
+  - platform: gpio
+    pin:
+      number: GPIO2
+      inverted: true
+    id: internal_led
+    name: Internal LED
+    on_state:
+      then:
+        - lambda: meshmesh_meshmeshcomponent_id->publishRemoteSwitchState(${remote_node_addr}, ${remote_state_hash}, x);
+  - platform: meshmesh
+    id: remote_switch
+    target: ${remote_switch_hash}
+    address: ${remote_node_addr}
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO0
+    name: Flash Button
+    filters:
+      - invert
+    on_press:
+      then:
+        - lambda: id(remote_switch)->toggle();
+

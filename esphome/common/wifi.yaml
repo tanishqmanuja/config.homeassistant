@@ -3,7 +3,7 @@
 # Docs: https://esphome.io/components/wifi.html
 ---
 defaults:
-  GATEWAY: !secret ROUTER_GATEWAY
+  GATEWAY: !secret WIFI_GATEWAY
 
 wifi:
   ssid: !secret WIFI_SSID
