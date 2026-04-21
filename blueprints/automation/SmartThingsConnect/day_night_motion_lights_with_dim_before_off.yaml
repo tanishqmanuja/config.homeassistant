@@ -1,0 +1,597 @@
+blueprint:
+  name: Advanced motion-activated lights
+  description: Motion-activated lights with different brightness for day/night as
+    well as dim before turning off
+  domain: automation
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          domain:
+          - binary_sensor
+          multiple: false
+          reorder: false
+    light_entities:
+      name: Light(s)
+      selector:
+        entity:
+          domain:
+          - light
+          multiple: true
+          reorder: false
+    day_time_start:
+      name: (Required) Daytime start
+      description: The time when the day mode starts
+      selector:
+        time: {}
+    day_time_end:
+      name: (Required) Daytime end
+      description: The time when the day mode ends
+      selector:
+        time: {}
+    day_brightness:
+      name: Day brightness
+      description: Brightness, in day mode
+      default: 100
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    day_dim_brightness:
+      name: Dimmed day brightness
+      description: Dimmed brightness, in day mode, brightness will not increase if
+        it is already lower
+      default: 50
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    day_color:
+      name: Day color
+      description: Color, in day mode
+      default:
+      - 255
+      - 255
+      - 255
+      selector:
+        color_rgb: {}
+    day_color_temp:
+      name: Day color temperature
+      description: Color temperature, in day mode
+      default: 153
+      selector:
+        color_temp:
+          unit: mired
+    day_kelvin:
+      name: Day color temperature in kelvin
+      description: Color temperature, in day mode
+      default: 6500
+      selector:
+        number:
+          min: 2000.0
+          max: 6500.0
+          step: 1.0
+          mode: slider
+    day_select_color_option:
+      name: Day color option
+      description: Select which color option to use, color_rgb/color_temp or none(preserve
+        last color), in day mode
+      default: none
+      selector:
+        select:
+          mode: dropdown
+          options:
+          - label: Color RGB
+            value: color_rgb
+          - label: Color Temperature
+            value: color_temp
+          - label: Kelvin
+            value: kelvin
+          - label: None
+            value: none
+          multiple: false
+          sort: false
+          custom_value: false
+    night_brightness:
+      name: Night brightness
+      description: Brightness, in night mode
+      default: 20
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    night_dim_brightness:
+      name: Dimmed night brightness
+      description: Dimmed brightness, in night mode, brightness will not increase
+        if it is already lower
+      default: 1
+      selector:
+        number:
+          min: 1.0
+          max: 100.0
+          step: 1.0
+          mode: slider
+    night_color:
+      name: Night color
+      description: Color, in night mode
+      default:
+      - 255
+      - 255
+      - 255
+      selector:
+        color_rgb: {}
+    night_color_temp:
+      name: Night color temperature
+      description: Color temperature, in night mode
+      default: 153
+      selector:
+        color_temp:
+          unit: mired
+    night_kelvin:
+      name: Night color temperature in kelvin
+      description: Color temperature, in night mode
+      default: 6500
+      selector:
+        number:
+          min: 2000.0
+          max: 6500.0
+          step: 1.0
+          mode: slider
+    night_select_color_option:
+      name: Night color option
+      description: Select which color option to use, color_rgb/color_temp or none(preserve
+        last color), in night mode
+      default: none
+      selector:
+        select:
+          mode: dropdown
+          options:
+          - label: Color RGB
+            value: color_rgb
+          - label: Color Temperature
+            value: color_temp
+          - label: Kelvin
+            value: kelvin
+          - label: None
+            value: none
+          multiple: false
+          sort: false
+          custom_value: false
+    no_motion_dim_wait_day:
+      name: Wait time until dim after no motion is detected, in day mode
+      description: Time to dim the light after detecting the last movement for daytime
+        mode
+      default: 120
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    no_motion_off_wait_day:
+      name: Wait time until off after no motion is detected, in day mode
+      description: Time to turn off the light after the light is dimmed for day mode,
+        total time until off after no motion is dim time + off time
+      default: 120
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    no_motion_dim_wait_night:
+      name: Wait time until dim after no motion is detected, in night mode
+      description: Time to dim the light on after detecting the last movement in night
+        mode
+      default: 120
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    no_motion_off_wait_night:
+      name: Wait time until off after no motion is detected, in night mode
+      description: Time to turn off the light after the light is dimmed for night
+        mode, total time until off after no motion is dim time + off time
+      default: 120
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    transition_time:
+      name: Transition time for adjusting brightness
+      description: Number of seconds to perform the brightness transitions
+      default: 2
+      selector:
+        number:
+          min: 0.0
+          max: 60.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    retry_if_fail:
+      name: Retry turn on/off action if entity state failed to change, the first retry
+        will run immediately if initial action attempt failed
+      description: Retry will only apply to turn on/off actions, dim action is excluded
+      default: false
+      selector:
+        boolean: {}
+    number_of_retries:
+      name: Number of retries if entity state failed to change after turn on/off actions,
+        the total actions issued will be 1 + number of retries if all of them are
+        failed, otherwise it well stop once success
+      description: Retry will only apply to turn on/off actions, dim action is excluded
+      default: 3
+      selector:
+        number:
+          min: 0.0
+          max: 15.0
+          step: 1.0
+          mode: slider
+    retry_wait:
+      name: Wait time before retrying
+      description: Wait time before verifying entity state and decide if retry action
+        is needed
+      default: 3
+      selector:
+        number:
+          min: 1.0
+          max: 60.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+    log_failed_action:
+      name: Write to logbook regarding which device(s) failed to turn on/off
+      description: The logbook entry will include friendly name of device(s) failed
+        to turn on/off and number of attempts
+      default: false
+      selector:
+        boolean: {}
+    master_bypass_condition:
+      name: Master bypass condition
+      description: Allow execution of the automation to be completely bypassed if
+        this returns true(when you want the lights only to be turned on/off manually)
+      default: '{{ false }}'
+      selector:
+        template: {}
+    day_bypass_condition:
+      name: Day mode bypass condition
+      description: Allow turning on the lights as if it is in night mode during configured
+        daytime period if this returns true(when you want the day mode to be overridden
+        with a more complex condition)
+      default: '{{ false }}'
+      selector:
+        template: {}
+    turn_on_bypass_condition:
+      name: Turn on bypass condition
+      description: Allow turning on of the lights to be bypassed if this returns true(when
+        you want the lights only to be turned on manually but turns off automatically)
+      default: '{{ false }}'
+      selector:
+        template: {}
+    turn_off_bypass_condition:
+      name: Turn off bypass condition
+      description: Allow turning off of the lights to be bypassed if this returns
+        true(when you want the lights only to be turned off manually but turns on
+        automatically)
+      default: '{{ false }}'
+      selector:
+        template: {}
+  source_url: https://raw.githubusercontent.com/SmartThingsConnect/HomeAssistantMigration/main/blueprints/automation/day_night_motion_lights_with_dim_before_off.yaml
+variables:
+  light_entities: !input light_entities
+  master_bypass_condition: !input master_bypass_condition
+  day_bypass_condition: !input day_bypass_condition
+  turn_on_bypass_condition: !input turn_on_bypass_condition
+  turn_off_bypass_condition: !input turn_off_bypass_condition
+  no_motion_dim_wait_day: !input no_motion_dim_wait_day
+  no_motion_off_wait_day: !input no_motion_off_wait_day
+  no_motion_dim_wait_night: !input no_motion_dim_wait_night
+  no_motion_off_wait_night: !input no_motion_off_wait_night
+  day_color: !input day_color
+  day_color_temp: !input day_color_temp
+  day_kelvin: !input day_kelvin
+  day_select_color_option: !input day_select_color_option
+  day_brightness: !input day_brightness
+  day_dim_brightness: !input day_dim_brightness
+  night_color: !input night_color
+  night_color_temp: !input night_color_temp
+  night_kelvin: !input night_kelvin
+  night_select_color_option: !input night_select_color_option
+  night_brightness: !input night_brightness
+  night_dim_brightness: !input night_dim_brightness
+  transition_time: !input transition_time
+  retry_if_fail: !input retry_if_fail
+  number_of_retries: !input number_of_retries
+  log_failed_action: !input log_failed_action
+  day_turn_on_data: "{% set data_dict = namespace(value='') %} {% set data_dict.value
+    = data_dict.value\n  ~ '\"transition\":\"'\n  ~ transition_time ~ '\"' ~ ',' %}\n{%
+    set data_dict.value = data_dict.value\n  ~ '\"brightness_pct\":\"'\n  ~ day_brightness
+    ~ '\"' ~ ',' %}\n{% if day_select_color_option == 'color_rgb' %}\n    {% set data_dict.value
+    = data_dict.value\n      ~ '\"rgb_color\":\"'\n      ~ day_color ~ '\"' ~ ','
+    %}\n{% elif day_select_color_option == 'color_temp' %}\n    {% set data_dict.value
+    = data_dict.value\n      ~ '\"color_temp\":\"'\n      ~ day_color_temp ~ '\"'
+    ~ ',' %}\n{% elif day_select_color_option == 'kelvin' %}\n    {% set data_dict.value
+    = data_dict.value\n      ~ '\"kelvin\":\"'\n      ~ day_kelvin ~ '\"' ~ ',' %}\n{%
+    endif %} {{ '{' ~ data_dict.value[:-1] ~ '}' }}\n"
+  night_turn_on_data: "{% set data_dict = namespace(value='') %} {% set data_dict.value
+    = data_dict.value\n  ~ '\"transition\":\"'\n  ~ transition_time ~ '\"' ~ ',' %}\n{%
+    set data_dict.value = data_dict.value\n  ~ '\"brightness_pct\":\"'\n  ~ night_brightness
+    ~ '\"' ~ ',' %}\n{% if night_select_color_option == 'color_rgb' %}\n    {% set
+    data_dict.value = data_dict.value\n      ~ '\"rgb_color\":\"'\n      ~ night_color
+    ~ '\"' ~ ',' %}\n{% elif night_select_color_option == 'color_temp' %}\n    {%
+    set data_dict.value = data_dict.value\n      ~ '\"color_temp\":\"'\n      ~ night_color_temp
+    ~ '\"' ~ ',' %}\n{% elif night_select_color_option == 'kelvin' %}\n    {% set
+    data_dict.value = data_dict.value\n      ~ '\"kelvin\":\"'\n      ~ night_kelvin
+    ~ '\"' ~ ',' %}\n{% endif %} {{ '{' ~ data_dict.value[:-1] ~ '}' }}\n"
+trigger:
+- platform: state
+  entity_id: !input motion_entity
+condition:
+- condition: template
+  value_template: '{{ not master_bypass_condition }}'
+action:
+- if:
+  - condition: state
+    entity_id: !input motion_entity
+    state: 'on'
+  - condition: template
+    value_template: '{{ not turn_on_bypass_condition }}'
+  then:
+  - if:
+    - condition: time
+      after: !input day_time_start
+      before: !input day_time_end
+    - condition: template
+      value_template: '{{ not day_bypass_condition }}'
+    then:
+    - service: light.turn_on
+      data: '{{ day_turn_on_data }}'
+      target:
+        entity_id: !input light_entities
+    - if:
+      - condition: template
+        value_template: '{{ retry_if_fail }}'
+      - condition: template
+        value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+          ''on'') | list | length) != (expand(light_entities) | list | length) }}'
+      then:
+      - repeat:
+          until:
+          - condition: template
+            value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+              ''on'') | list | length) == (expand(light_entities) | list | length)
+              or repeat.index == (number_of_retries | int ) }}'
+          sequence:
+          - if:
+            - condition: template
+              value_template: '{{ log_failed_action }}'
+            then:
+            - service: logbook.log
+              data:
+                name: '{{ this.entity_id }}'
+                entity_id: '{{ this.entity_id }}'
+                message: Failed to turn on {{ expand(light_entities) | selectattr('state',
+                  'ne', 'on') | map(attribute = 'name') | list | join(', ') }}, retrying
+                  {{ repeat.index }} time(s)
+          - service: light.turn_on
+            data: '{{ day_turn_on_data }}'
+            target:
+              entity_id: !input light_entities
+          - delay:
+              seconds: !input retry_wait
+    else:
+    - service: light.turn_on
+      data: '{{ night_turn_on_data }}'
+      target:
+        entity_id: !input light_entities
+    - if:
+      - condition: template
+        value_template: '{{ retry_if_fail }}'
+      - condition: template
+        value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+          ''on'') | list | length) != (expand(light_entities) | list | length) }}'
+      then:
+      - repeat:
+          until:
+          - condition: template
+            value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+              ''on'') | list | length) == (expand(light_entities) | list | length)
+              or repeat.index == (number_of_retries | int) }}'
+          sequence:
+          - if:
+            - condition: template
+              value_template: '{{ log_failed_action }}'
+            then:
+            - service: logbook.log
+              data:
+                name: '{{ this.entity_id }}'
+                entity_id: '{{ this.entity_id }}'
+                message: Failed to turn on {{ expand(light_entities) | selectattr('state',
+                  'ne', 'on') | map(attribute = 'name') | list | join(', ') }}, retrying
+                  {{ repeat.index }} time(s)
+          - service: light.turn_on
+            data: '{{ night_turn_on_data }}'
+            target:
+              entity_id: !input light_entities
+          - delay:
+              seconds: !input retry_wait
+- if:
+  - condition: state
+    entity_id: !input motion_entity
+    state: 'off'
+  - condition: template
+    value_template: '{{ not turn_off_bypass_condition }}'
+  then:
+  - if:
+    - condition: time
+      after: !input day_time_start
+      before: !input day_time_end
+    - condition: template
+      value_template: '{{ not day_bypass_condition }}'
+    then:
+    - delay:
+        seconds: !input no_motion_dim_wait_day
+    - if:
+      - condition: template
+        value_template: '{{ expand(light_entities) | selectattr(''state'', ''=='',
+          ''on'') | list | length > 0 }}'
+      - condition: state
+        entity_id: !input motion_entity
+        state: 'off'
+        for:
+          seconds: !input no_motion_dim_wait_day
+      then:
+      - if:
+        - condition: template
+          value_template: '{{ (expand(light_entities) | selectattr(''attributes.brightness'',
+            ''defined'') | selectattr(''attributes.brightness'', ''>'', day_dim_brightness)
+            | list | length) == (expand(light_entities) | selectattr(''attributes.brightness'',
+            ''defined'') | list | length) }}'
+        then:
+        - service: light.turn_on
+          data:
+            transition: !input transition_time
+            brightness_pct: !input day_dim_brightness
+          target:
+            entity_id: !input light_entities
+    - delay:
+        seconds: !input no_motion_off_wait_day
+    - if:
+      - condition: template
+        value_template: '{{ expand(light_entities) | selectattr(''state'', ''=='',
+          ''on'') | list | length > 0 }}'
+      - condition: state
+        entity_id: !input motion_entity
+        state: 'off'
+        for:
+          seconds: '{{ (no_motion_dim_wait_day | int) + (no_motion_off_wait_day |
+            int) }}'
+      then:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: !input light_entities
+      - if:
+        - condition: template
+          value_template: '{{ retry_if_fail }}'
+        - condition: template
+          value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+            ''off'') | list | length) != (expand(light_entities) | list | length)
+            }}'
+        then:
+        - repeat:
+            until:
+            - condition: template
+              value_template: '{{ (expand(light_entities) | selectattr(''state'',
+                ''eq'', ''off'') | list | length) == (expand(light_entities) | list
+                | length) or repeat.index == (number_of_retries | int) }}'
+            sequence:
+            - if:
+              - condition: template
+                value_template: '{{ log_failed_action }}'
+              then:
+              - service: logbook.log
+                data:
+                  name: '{{ this.entity_id }}'
+                  entity_id: '{{ this.entity_id }}'
+                  message: Failed to turn off {{ expand(light_entities) | selectattr('state',
+                    'ne', 'off') | map(attribute = 'name') | list | join(', ') }},
+                    retrying {{ repeat.index }} time(s)
+            - service: light.turn_off
+              data: {}
+              target:
+                entity_id: !input light_entities
+            - delay:
+                seconds: !input retry_wait
+    else:
+    - delay:
+        seconds: !input no_motion_dim_wait_night
+    - if:
+      - condition: template
+        value_template: '{{ expand(light_entities) | selectattr(''state'', ''=='',
+          ''on'') | list | length > 0 }}'
+      - condition: state
+        entity_id: !input motion_entity
+        state: 'off'
+        for:
+          seconds: !input no_motion_dim_wait_night
+      then:
+      - if:
+        - condition: template
+          value_template: '{{ (expand(light_entities) | selectattr(''attributes.brightness'',
+            ''defined'') | selectattr(''attributes.brightness'', ''>'', night_dim_brightness)
+            | list | length) == (expand(light_entities) | selectattr(''attributes.brightness'',
+            ''defined'') | list | length) }}'
+        then:
+        - service: light.turn_on
+          data:
+            transition: !input transition_time
+            brightness_pct: !input night_dim_brightness
+          target:
+            entity_id: !input light_entities
+    - delay:
+        seconds: !input no_motion_off_wait_night
+    - if:
+      - condition: template
+        value_template: '{{ expand(light_entities) | selectattr(''state'', ''=='',
+          ''on'') | list | length > 0 }}'
+      - condition: state
+        entity_id: !input motion_entity
+        state: 'off'
+        for:
+          seconds: '{{ (no_motion_dim_wait_night | int) + (no_motion_off_wait_night
+            | int) }}'
+      then:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: !input light_entities
+      - if:
+        - condition: template
+          value_template: '{{ retry_if_fail }}'
+        - condition: template
+          value_template: '{{ (expand(light_entities) | selectattr(''state'', ''eq'',
+            ''off'') | list | length) != (expand(light_entities) | list | length)
+            }}'
+        then:
+        - repeat:
+            until:
+            - condition: template
+              value_template: '{{ (expand(light_entities) | selectattr(''state'',
+                ''eq'', ''off'') | list | length) == (expand(light_entities) | list
+                | length) or repeat.index == (number_of_retries | int) }}'
+            sequence:
+            - if:
+              - condition: template
+                value_template: '{{ log_failed_action }}'
+              then:
+              - service: logbook.log
+                data:
+                  name: '{{ this.entity_id }}'
+                  entity_id: '{{ this.entity_id }}'
+                  message: Failed to turn off {{ expand(light_entities) | selectattr('state',
+                    'ne', 'off') | map(attribute = 'name') | list | join(', ') }},
+                    retrying {{ repeat.index }} time(s)
+            - service: light.turn_off
+              data: {}
+              target:
+                entity_id: !input light_entities
+            - delay:
+                seconds: !input retry_wait
+mode: restart
+max_exceeded: silent

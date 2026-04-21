@@ -1,0 +1,6 @@
+---
+button:
+  - platform: restart
+    name: "Restart"
+    icon: mdi:restart
+    entity_category: diagnostic

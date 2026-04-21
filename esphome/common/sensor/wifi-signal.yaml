@@ -1,6 +1,7 @@
 ---
 sensor:
   - platform: wifi_signal
+    id: rssi
     name: RSSI
     entity_category: "diagnostic"
     update_interval: 60s

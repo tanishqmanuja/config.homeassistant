@@ -6,15 +6,16 @@
 #include "esphome/components/light/light_effect.h"
 #include "esphome/components/light/light_output.h"
 #include "ddp_light_effect_base.h"
+#include <algorithm>
 
 namespace esphome {
 namespace ddp {
 
 class DDPLightEffect : public DDPLightEffectBase, public light::LightEffect {
  public:
-  DDPLightEffect(const std::string &name);
+  DDPLightEffect(const char *name);
 
-  const std::string &get_name() override;
+  const char *get_name() override;
 
   void start() override;
   void stop() override;

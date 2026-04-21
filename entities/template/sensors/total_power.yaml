@@ -1,0 +1,28 @@
+name: "Total Power"
+unique_id: total_power
+unit_of_measurement: "W"
+device_class: power
+state_class: measurement
+state: >
+  {% set excluded = [
+    'sensor.tracked_power',
+    'sensor.all_standby_power',
+    'sensor.total_power'
+  ] %}
+
+  {% set entities = states.sensor 
+            | selectattr('entity_id', 'search', '_(power|power_2|power_3)$')
+            | rejectattr('entity_id', 'in', excluded)
+            | rejectattr('entity_id', 'eq', this.entity_id | default('none'))
+            | map(attribute='entity_id') | list %}
+
+  {% set total = expand(entities) 
+            | map(attribute='state') 
+            | select('is_number')
+            | map('float') | sum %}
+
+  {{ total | round(2) }}
+availability: >
+  {{ states.sensor 
+    | selectattr('entity_id', 'search', '_(power|power_2|power_3)$') 
+    | list | length > 0 }}

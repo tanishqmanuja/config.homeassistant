@@ -1,0 +1,74 @@
+name: "Tanishq Room Atomberg Proxy"
+unique_id: tanishq_room_atomberg_proxy
+state: "{{ states('fan.tanishq_room_switcher_ch_a') }}"
+turn_on:
+  - action: fan.turn_on
+    target:
+      entity_id: fan.tanishq_room_switcher_ch_a
+turn_off:
+  - action: fan.turn_off
+    target:
+      entity_id: fan.tanishq_room_switcher_ch_a
+percentage: >
+  {{ state_attr('fan.tanishq_room_atomberg', 'percentage') }}
+speed_count: 6
+set_percentage:
+  - action: fan.set_percentage
+    target:
+      entity_id: fan.tanishq_room_atomberg
+    data:
+      percentage: "{{ percentage }}"
+preset_modes:
+  - "Off"
+  - "Silent"
+  - "Low"
+  - "Medium"
+  - "High"
+  - "Boost"
+preset_mode: >
+  {% if is_state('fan.tanishq_room_switcher_ch_a', 'on') %}
+    {% if state_attr('fan.tanishq_room_atomberg', 'percentage') == 100  %}
+      Boost
+    {% elif state_attr('fan.tanishq_room_atomberg', 'percentage') == 83 %}
+      High
+    {% elif state_attr('fan.tanishq_room_atomberg', 'percentage') == 50 %}
+      Medium
+    {% elif state_attr('fan.tanishq_room_atomberg', 'percentage') == 33 %}
+      Low
+    {% else %}
+      Silent
+    {% endif %}
+  {% else %}
+    Off
+  {% endif %}
+set_preset_mode:
+  - if:
+    - condition: template
+      value_template: "{{ preset_mode != 'Off' }}"
+    - condition: state
+      entity_id: fan.tanishq_room_switcher_ch_a
+      state: "off"
+    then:
+      - action: fan.turn_on
+        target:
+          entity_id: fan.tanishq_room_switcher_ch_a
+      - delay: "00:00:05"
+
+  - action: fan.set_percentage
+    target:
+      entity_id: fan.tanishq_room_atomberg
+    data:
+      percentage: >-
+        {% if preset_mode == 'Boost' %}
+          100
+        {% elif preset_mode == 'High' %}
+          83.33
+        {% elif preset_mode == 'Medium' %}
+          50
+        {% elif preset_mode == 'Low' %}
+          33.33
+        {% elif preset_mode == 'Silent' %}
+          16.66
+        {% else %}
+          0
+        {% endif %}

@@ -1,0 +1,9 @@
+substitutions:
+  device_name: tommy01
+  friendly_name: TOMMY 01
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/esp32dev.idf.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+  tommy.esp32: !include ./common/tommy/esp32.yaml

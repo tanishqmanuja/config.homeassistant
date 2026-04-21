@@ -1,8 +1,0 @@
-esphome:
-  name: ln882-test
-
-ln882x:
-  board: generic-ln882hki
-  family: LN882H
-  framework:
-    version: recommended

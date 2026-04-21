@@ -1,37 +1,30 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components.light.types import AddressableLightEffect, LightEffect
 from esphome.components.light.effects import (
     register_addressable_effect,
     register_monochromatic_effect,
     register_rgb_effect,
 )
+from esphome.components.light.types import AddressableLightEffect, LightEffect
 from esphome.const import CONF_ID, CONF_NAME
 
 DEPENDENCIES = ["network"]
 
 ddp_ns = cg.esphome_ns.namespace("ddp")
 DDPLightEffect = ddp_ns.class_("DDPLightEffect", LightEffect)
-DDPMonochromaticLightEffect = ddp_ns.class_(
-    "DDPMonochromaticLightEffect", LightEffect
-)
-DDPAddressableLightEffect = ddp_ns.class_(
-    "DDPAddressableLightEffect", AddressableLightEffect
-)
+DDPMonochromaticLightEffect = ddp_ns.class_("DDPMonochromaticLightEffect", LightEffect)
+DDPAddressableLightEffect = ddp_ns.class_("DDPAddressableLightEffect", AddressableLightEffect)
 DDPComponent = ddp_ns.class_("DDPComponent", cg.Component)
 
 DDP_SCALING = {
-    "PIXEL":    ddp_ns.DDP_SCALE_PIXEL,
-    "STRIP":    ddp_ns.DDP_SCALE_STRIP,
-    "PACKET":   ddp_ns.DDP_SCALE_PACKET,
+    "PIXEL": ddp_ns.DDP_SCALE_PIXEL,
+    "STRIP": ddp_ns.DDP_SCALE_STRIP,
+    "PACKET": ddp_ns.DDP_SCALE_PACKET,
     "MULTIPLY": ddp_ns.DDP_SCALE_MULTIPLY,
-    "NONE":     ddp_ns.DDP_NO_SCALING
+    "NONE": ddp_ns.DDP_NO_SCALING,
 }
 
-DDP_SCALING_MONO = {
-    k: v for k, v in DDP_SCALING.items()
-    if k not in ("STRIP", "PACKET")
-}
+DDP_SCALING_MONO = {k: v for k, v in DDP_SCALING.items() if k not in ("STRIP", "PACKET")}
 
 CONF_DDP_ID = "ddp_id"
 CONF_DDP_TIMEOUT = "timeout"

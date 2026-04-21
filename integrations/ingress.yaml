@@ -1,0 +1,11 @@
+ingress:
+  meshmesh:
+    title: MeshMesh
+    require_admin: true
+    icon: mdi:access-point-network
+    url: http://192.168.29.12:4040
+  matterhub:
+    title: Matter Hub
+    require_admin: true
+    icon: phu:matter
+    url: http://192.168.29.12:8482

@@ -13,8 +13,7 @@ backups
 
 # Custom Addons
 custom_components
-www/community
-www/alexa_tts
+www
 
 # User Sensitive Data
 image
@@ -27,11 +26,15 @@ debug
 # IDE
 .vscode
 
+# Temp
+.cache
+
 # Home Assistant
 .cloud
 .storage
 home-assistant.log*
 home-assistant*.db*
+.ha_run.lock
 
 # Extra Addons
 .addons

@@ -1,0 +1,16 @@
+substitutions:
+  device_name: "bedlight"
+  friendly_name: "Bed Light"
+  device_suffix: "01"
+  wifi_ssid: !secret wifi_ssid
+  wifi_password: !secret wifi_password
+  api_encryption_key: !secret api_encryption_key
+
+packages:
+  # dimled.mini: github://tqlabs-in/dimled-mini/esphome/device/base.yaml@main
+  dimled.mini:
+    url: https://github.com/tqlabs-in/dimled-mini
+    files: [esphome/device/base.yaml]
+    ref: main
+    refresh: always
+

@@ -1,0 +1,13 @@
+substitutions:
+  device_suffix: "03"
+  wifi_ssid: !secret WIFI_SSID
+  wifi_password: !secret WIFI_PASSWORD
+  api_encryption_key: !secret ESPHOME_API_ENC_KEY
+
+packages:
+  dimled.mini: github://tqlabs-in/dimled-mini/esphome/device/base.yaml@main
+  # dimled.mini:
+  #   url: https://github.com/tqlabs-in/dimled-mini-esphome
+  #   files: [device/base.yaml]
+  #   ref: main
+  #   refresh: always

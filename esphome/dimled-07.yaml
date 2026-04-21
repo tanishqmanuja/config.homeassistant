@@ -1,0 +1,7 @@
+substitutions:
+  device_name: dimled07
+  friendly_name: DimLED 07
+  default_brightness: 50%
+
+packages:
+  dimled.mk2: !include products/dimled.mk2/base.yaml

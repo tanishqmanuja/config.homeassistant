@@ -1,0 +1,6 @@
+substitutions:
+  device_name: dimledmini01
+  friendly_name: DimLED Mini 01
+
+packages:
+  dimled.mini: !include products/dimled-mini/base.yaml

@@ -421,12 +421,10 @@ Material You:
   ha-card-border-width: 0px
   ha-card-border-style: none
   ha-card-border: none
+  ha-card-backdrop-filter: none
   ha-config-card-border-radius: var(--md-sys-shape-corner-large)
   lovelace-background: var(--md-sys-color-surface)
-  view-background: var(--md-sys-color-surface)
-  app-header-background-color: var(--md-sys-color-surface)
-  margin-title-ltr: 0
-  margin-title-rtl: 0
+  ha-section-border-radius: var(--md-sys-shape-corner-medium)
   sidebar-selected-text-color: var(--md-sys-color-secondary)
   sidebar-selected-icon-color: var(--md-sys-color-on-secondary-container)
   sidebar-selected-background: var(--md-sys-color-secondary-container)
@@ -439,11 +437,22 @@ Material You:
   md-list-item-pressed-state-layer-color: var(--md-sys-color-on-secondary-container)
   md-list-item-hover-state-layer-opacity: 0.08
   md-list-item-pressed-state-layer-opacity: 0.1
+  app-header-background-color: var(--md-sys-color-surface)
   app-header-text-color: var(--md-sys-color-on-surface)
   app-header-edit-text-color: var(--md-sys-color-on-surface-variant)
+  app-header-border-bottom: none
+  margin-title-ltr: 0
+  margin-title-rtl: 0
   ha-dialog-surface-background: var(--md-sys-color-surface-container-high)
   ha-dialog-border-radius: var(--md-sys-shape-corner-extra-large)
+  ha-dialog-header-title-font-size: var(--md-sys-typescale-headline-small-size)
+  ha-dialog-header-title-font-weight: var(--md-sys-typescale-headline-small-weight)
+  ha-dialog-header-title-line-height: var(--md-sys-typescale-headline-small-line-height)
+  ha-dialog-header-title-letter-spacing: var(--md-sys-typescale-headline-small-tracking)
+  ha-dialog-header-title-color: var(--md-sys-color-on-surface)
+  wa-color-overlay-modal: rgba(from var(--md-sys-color-scrim) r g b / 0.32)
   mdc-dialog-scrim-color: rgba(from var(--md-sys-color-scrim) r g b / 0.32)
+  ha-dialog-scrim-backdrop-filter: none
   dialog-content-overflow: hidden auto
   md-dialog-container-color: var(--md-sys-color-surface-container-high)
   md-dialog-headline-size: var(--md-sys-typescale-headline-small-size)
@@ -454,6 +463,7 @@ Material You:
   md-dialog-supporting-text-weight: var(--md-sys-typescale-body-medium-weight)
   md-dialog-supporting-text-line-height: var(--md-sys-typescale-body-medium-line-height)
   md-dialog-supporting-text-tracking: var(--md-sys-typescale-body-medium-tracking)
+  ha-bottom-sheet-handle-color: var(--md-sys-color-on-surface-variant)
   mdc-theme-primary: var(--md-sys-color-primary)
   mdc-theme-secondary: var(--md-sys-color-secondary)
   mdc-theme-surface: var(--md-sys-color-surface-container)
@@ -488,31 +498,14 @@ Material You:
   mdc-checkbox-ink-color: var(--checkbox-checked-icon-color)
   mdc-checkbox-unchecked-color: var(--checkbox-unchecked-border-color)
   mdc-radio-unchecked-color: var(--md-sys-color-on-surface-variant)
-  slider-color: var(--md-sys-color-inverse-primary)
-  slider-secondary-color: var(--md-sys-color-primary)
-  md-slider-handle-color: var(--md-sys-color-surface-container-low)
-  md-slider-handle-shadow-color: transparent
-  md-slider-hover-handle-color: var(--md-sys-color-surface-container-low)
-  md-slider-hover-state-layer-color: transparent
-  md-slider-hover-state-layer-opacity: 0
-  md-slider-pressed-handle-color: var(--md-sys-color-surface-container-low)
-  md-slider-pressed-state-layer-color: transparent
-  md-slider-pressed-state-layer-opacity: 0
-  md-slider-focus-handle-color: var(--md-sys-color-surface-container-low)
-  md-slider-active-track-height: 24px
-  md-slider-inactive-track-height: 24px
-  md-slider-active-track-shape: 8px
-  md-slider-inactive-track-shape: 8px
-  md-slider-active-track-color: var(--md-sys-color-primary)
-  md-slider-inactive-track-color: var(--md-sys-color-secondary-container)
-  md-slider-label-text-color: var(--md-sys-color-inverse-on-surface)
-  md-slider-label-container-color: var(--md-sys-color-inverse-surface)
-  md-slider-label-container-height: 44px
-  md-slider-label-container-width: 48px
-  md-slider-with-tick-marks-container-size: 4px
-  md-slider-with-tick-marks-active-container-color: var(--md-sys-color-on-primary)
-  md-slider-with-tick-marks-inactive-container-color: var(--md-sys-color-on-secondary-container)
-  md-slider-disabled-handle-color: var(--md-sys-color-surface-container-low)
+  ha-tooltip-arrow-size: 0px
+  ha-tooltip-border-radius: var(--md-sys-shape-corner-extra-small)
+  ha-tooltip-font-family: var(--font-family)
+  ha-tooltip-font-size: var(--md-sys-typescale-body-small-size)
+  ha-tooltip-font-weight: var(--md-sys-typescale-body-small-weight)
+  ha-tooltip-line-height: var(--md-sys-typescale-body-small-line-height)
+  ha-slider-track-size: 24px
+  ha-slider-thumb-negative-color: var(--md-sys-color-on-surface-container-low)
   button-height: 40px
   ha-button-height: 40px
   ha-button-border-radius: calc(var(--ha-button-height))
@@ -576,17 +569,28 @@ Material You:
   md-input-chip-selected-pressed-state-layer-opacity: 0.1
   horizontal-stack-card-margin: 0px 4px
   vertical-stack-card-margin: 4px 0px
-  ha-view-sections-row-gap: 18px
+  ha-view-sections-narrow-column-gap: 18px
+  ha-box-shadow-s: var(--md-sys-elevation-level1)
+  ha-box-shadow-m: var(--md-sys-elevation-level2)
+  ha-box-shadow-l: var(--md-sys-elevation-level3)
+  wa-shadow-s: var(--md-sys-elevation-level1)
+  wa-shadow-m: var(--md-sys-elevation-level2)
+  wa-shadow-l: var(--md-sys-elevation-level3)
+  ha-color-shadow-light: var(--md-sys-color-shadow)
+  ha-color-shadow-dark: var(--md-sys-color-shadow)
+  wa-focus-ring: solid 3px var(--md-sys-color-secondary)
+  ha-color-surface-default: var(--md-sys-color-surface)
+  ha-color-on-surface-default: var(--md-sys-color-on-surface)
+  ha-color-border-neutral-quiet: var(--md-sys-color-outline-variant)
+  ha-color-border-neutral-normal: var(--md-sys-color-outline-variant)
+  ha-color-border-neutral-loud: var(--md-sys-color-outline-variant)
   header-height: 64px
   footer-height: 64px
   mdc-top-app-bar-fixed-box-shadow: none
   app-header-edit-background-color: var(--md-sys-color-surface-container)
   app-header-selection-bar-color: none
   navbar-background: var(--md-sys-color-surface-container)
-  font-family: >-
-    Figtree, "Google Sans", "Roboto Flex", Roboto, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color
-    Emoji", "Segoe UI Emoji", "Segoe UI Symbol"
+  font-family: '"Google Sans Flex", Figtree, "Roboto Flex", Roboto, Noto, sans-serif'
   primary-font-family: var(--font-family)
   ha-card-header-font-family: var(--font-family)
   mdc-typography-font-family: var(--font-family)
@@ -604,7 +608,6 @@ Material You:
   ha-heading-card-subtitle-line-height: var(--md-sys-typescale-title-small-line-height)
   ha-font-family-body: var(--font-family)
   ha-font-family-heading: var(--font-family)
-  ha-font-family-code: var(--font-family)
   ha-font-family-longform: var(--font-family)
   text-primary-color: var(--md-sys-color-surface)
   text-light-primary-color: hsl(from var(--md-sys-color-surface) h s calc(l + 20))
@@ -616,6 +619,8 @@ Material You:
   mdc-theme-text-secondary-on-background: var(--md-sys-color-on-surface-variant)
   mdc-theme-text-hint-on-background: var(--md-sys-color-on-surface-variant)
   mdc-theme-text-icon-on-background: var(--md-sys-color-on-surface-variant)
+  ha-color-form-background: var(--md-sys-color-surface-container-highest)
+  ha-color-form-background-hover: rgba(from var(--md-sys-color-on-surface) r g b / 0.08)
   input-background-color: var(--md-sys-color-surface-container-highest)
   input-fill-color: var(--md-sys-color-surface-container-highest)
   input-ink-color: var(--md-sys-color-on-surface)
@@ -652,6 +657,13 @@ Material You:
   bubble-select-list-item-accent-color: var(--md-sys-color-secondary-container)
   bubble-sub-button-light-background-color: var(--md-sys-color-secondary-container)
   bubble-main-background-color: var(--md-sys-color-surface-container-highest)
-  bubble-pop-up-main-background-color: var(--md-sys-color-surface-container-low)
   bubble-pop-up-border-radius: var(--md-sys-shape-corner-extra-large)
-  version: 5.0.1
+  bubble-select-list-border-radius: var(--md-sys-shape-corner-extra-small)
+  map-card-primary-color: var(--md-sys-color-primary-container)
+  map-card-primary-text-color: var(--md-sys-color-on-primary-container)
+  map-card-secondary-color: var(--md-sys-color-secondary-container)
+  map-card-secondary-text-color: var(--md-sys-color-on-secondary-container)
+  map-card-tertiary-color: var(--md-sys-color-tertiary-container)
+  map-card-tertiary-text-color: var(--md-sys-color-on-tertiary-container)
+  map-card-zoomer-background: var(--md-sys-color-surface-container-highest)
+  version: 5.0.10

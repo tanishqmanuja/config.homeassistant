@@ -1,0 +1,30 @@
+platform: rest
+name: Mainframe Power
+unique_id: mainframe_power
+resource: http://192.168.29.10:8085/data.json
+device_class: power
+state_class: measurement
+value_template: >
+  {% set all_hardware = value_json.Children[0].Children %}
+  {% set total = namespace(cpu=0, other=0) %}
+
+  {% for device in all_hardware %}
+    {% for category in device.Children if category.Text == "Powers" %}
+      
+      {% for sensor in category.Children %}
+        {% set value = sensor.Value.split(' ')[0] | float(0) %}
+        
+        {% if 'CPU Package' in sensor.Text %}
+          {% set total.cpu = value %}
+        {% elif 'GPU' in sensor.Text or 'Total' in sensor.Text %}
+          {% set total.other = total.other + value %}
+        {% endif %}
+        
+      {% endfor %}
+      
+    {% endfor %}
+  {% endfor %}
+
+  {{ (total.cpu * 1.3 + total.other + 50) | round(2) }}
+unit_of_measurement: "W"
+scan_interval: 15

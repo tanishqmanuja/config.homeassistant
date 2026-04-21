@@ -1,0 +1,9 @@
+substitutions:
+  wifi_ap_ssid: ESPHome $friendly_name
+  wifi_ap_password: !secret ESPHOME_FALLBACK_AP_PASSWORD
+
+wifi:
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: $wifi_ap_ssid
+    password: $wifi_ap_password

@@ -1,11 +1,7 @@
-# Substitutions: DEVICE_NAME, FRIENDLY_NAME
 ---
-esphome:
-  name: $DEVICE_NAME
-  friendly_name: $FRIENDLY_NAME
-
 packages:
+  esphome: !include esphome.yaml
   wifi: !include wifi.yaml
   ota: !include ota.yaml
-  logger: !include ./logger/default.yaml
+  logger: !include ./logger.yaml
   api: !include api.yaml

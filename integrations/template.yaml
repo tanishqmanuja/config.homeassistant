@@ -1,0 +1,5 @@
+template: 
+  - sensor: !include_dir_list ../entities/template/sensors/
+  - fan: !include_dir_list ../entities/template/fan/
+  # binary_sensors: !include_dir_list ../entities/templates/binary_sensors/
+  # light: !include_dir_list ../templates/entities/lights/

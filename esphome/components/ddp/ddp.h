@@ -18,9 +18,9 @@
 #include <WiFiUdp.h>
 #endif
 
+#include <algorithm>
 #include <map>
 #include <memory>
-#include <set>
 #include <vector>
 
 namespace esphome {
@@ -42,7 +42,7 @@ class DDPComponent : public esphome::Component {
 
  protected:
   std::unique_ptr<WiFiUDP> udp_;
-  std::set<DDPLightEffectBase *> light_effects_;
+  std::vector<DDPLightEffectBase *> light_effects_;
   std::vector<uint8_t> payload_buffer_;
 
   bool process_(const uint8_t *payload, uint16_t size);

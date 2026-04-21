@@ -1,0 +1,228 @@
+# ESPHome config for DimLED Mark II
+#
+# -------- PINOUT --------
+# BUILTIN LED: GPIO1
+# LED STRIP: GPIO3
+# BOOT BUTTON: GPIO0
+#
+# --- BUTTON BEHAVIOR ----
+# SINGLE PRESS - TOGGLE LED STRIP
+# DOUBLE PRESS - RESET TO DEFAULT BRIGHTNESS
+# LONG PRESS (HOLD) - INCREASE/DECREASE BRIGHTNESS
+
+---
+substitutions:
+  default_brightness: 50%
+
+packages:
+  base: !include ../../common/base.yaml
+  board: !include ../../common/board/esp01.yaml
+  uart.disable: !include ../../common/logger/disable.uart.yaml
+  wifi.stable: !include ../../common/wifi/stable.yaml
+  wifi.no-reboot: !include ../../common/wifi/no-reboot.yaml
+  api.no-reboot: !include ../../common/api/no-reboot.yaml
+  sensor.wifi-signal: !include ../../common/sensor/wifi-signal.yaml
+
+esp8266:
+  restore_from_flash: false
+  early_pin_init: false
+
+globals:
+   - id: should_increase
+     type: bool
+     restore_value: no
+     initial_value: 'true'
+
+esphome:
+  comment: DimLED Mark II
+  project:
+      name: TQLabs.DimLED
+      version: "2.0.0"
+  on_boot:
+    - priority: 400
+      then:
+        - if:
+            condition:
+              lambda: |-
+                'return ${(default_brightness | replace('%','') | float > 0.0) | lower};'
+            then:
+              - light.turn_on:
+                  id: led_strip
+                  brightness: $default_brightness 
+    - priority: 350
+      then:
+        - light.turn_on:
+            id: led_builtin
+            effect: blink
+
+wifi:
+  on_connect:
+    then:
+      - light.turn_on:
+          id: led_builtin
+          effect: "None"
+      - delay: 1200ms
+      - light.turn_off: led_builtin
+  on_disconnect:
+    then:
+      - light.turn_on:
+          id: led_builtin
+          effect: blink
+
+external_components:
+  - source: github://tanishqmanuja/esphome-components
+    components: [ ddp ]
+
+ddp:
+
+output:
+  - platform: gpio
+    id: led_builtin_output
+    pin:
+      number: GPIO1
+      inverted: true
+  - platform: esp8266_pwm
+    id: led_strip_output
+    pin:
+      number: GPIO3
+      inverted: false
+    frequency: 1000Hz
+    zero_means_zero: true
+
+sensor:
+  - id: !extend rssi
+    disabled_by_default: true
+
+light:
+  - platform: binary
+    id: led_builtin
+    output: led_builtin_output
+    effects:
+      - strobe:
+          name: blink
+          colors:
+            - state: true
+              brightness: 50% 
+              duration: 150ms
+            - state: false
+              duration: 150ms 
+
+  - platform: monochromatic
+    output: led_strip_output
+    id: led_strip
+    name: LED Strip
+    restore_mode: ALWAYS_OFF
+    gamma_correct: 1.8
+    default_transition_length: 0.75s
+    on_state:
+      - lambda: |-
+          bool is_on = id(led_strip).current_values.is_on();
+          if(!is_on) {
+            return;
+          }
+
+          float b = id(led_strip).current_values.get_brightness();
+          if(b <= 0.05f) {
+            id(should_increase) = true;
+          } else if(b == 1.0f) {
+            id(should_increase) = false;
+          }
+    effects:
+      - ddp:
+      - flicker:
+      - pulse:
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          update_interval: 2s
+      - pulse:
+          name: "Faded Glow Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 2s
+          update_interval: 4s
+          min_brightness: 20%
+          max_brightness: 40%
+
+binary_sensor:
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_multi_click:
+      # Hold
+      - timing:
+          - ON for at least 500ms
+        then:
+          - lambda: |-
+              bool is_on = id(led_strip).current_values.is_on();
+              if(!is_on) {
+                id(should_increase) = true;
+                return;
+              }
+
+              float b = id(led_strip).current_values.get_brightness();
+              if (b <= 0.05f) {
+                id(should_increase) = true;
+              } else if (b >= 0.95f) {
+                id(should_increase) = false;
+              }
+          - if:
+              condition:
+                lambda: 'return id(should_increase) == true;'
+              then:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: led_strip
+                          relative_brightness: 2%
+                          transition_length: 200ms
+                      - delay: 100ms
+              else:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: led_strip
+                          relative_brightness: -2%
+                          transition_length: 200ms
+                      - delay: 100ms
+
+      # Double Press
+      - timing:
+        - ON for at most 400ms
+        - OFF for at most 500ms
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.turn_on:
+              id: led_strip
+              brightness: $default_brightness
+      
+      # Single Press
+      - timing:
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.toggle: led_strip
+
+  # DISABLE UNUSED PINS
+  - platform: gpio
+    id: unused_gpio_15
+    pin:
+      number: GPIO15
+      mode: INPUT_PULLUP
+    use_interrupt: false

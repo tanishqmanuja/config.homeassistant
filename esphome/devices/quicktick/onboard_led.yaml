@@ -1,0 +1,26 @@
+defaults:
+  pins:
+    onboard_led: GPIO2
+
+output:
+  - platform: ledc
+    id: onboard_led_output
+    pin:
+      number: ${pins.onboard_led}
+      inverted: false
+      ignore_strapping_warning: true
+
+light:
+  - platform: monochromatic
+    id: onboard_led
+    name: Onboard LED
+    output: onboard_led_output
+    gamma_correct: 1
+    effects:
+      - strobe:
+          name: blink
+          colors:
+            - state: true
+              duration: 150ms
+            - state: false
+              duration: 150ms

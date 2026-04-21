@@ -11,9 +11,9 @@ namespace ddp {
 
 class DDPAddressableLightEffect : public DDPLightEffectBase, public light::AddressableLightEffect {
  public:
-  DDPAddressableLightEffect(const std::string &name);
+  DDPAddressableLightEffect(const char *name);
 
-  const std::string &get_name() override;
+  const char *get_name() override;
 
   void start() override;
   void stop() override;
@@ -23,10 +23,9 @@ class DDPAddressableLightEffect : public DDPLightEffectBase, public light::Addre
  protected:
   uint16_t process_(const uint8_t *payload, uint16_t size, uint16_t used) override;
 
-  float scan_packet_and_return_multiplier_(const uint8_t *payload, uint16_t start, uint16_t end);
-  float multiplier_from_max_val_(uint8_t max_val);
+  uint16_t calculate_multiplier_(const uint8_t *payload, uint16_t start, uint16_t end);
+  uint16_t get_fixed_point_multiplier_(uint8_t max_val);
   void set_max_brightness_();
-
 };
 
 }  // namespace ddp

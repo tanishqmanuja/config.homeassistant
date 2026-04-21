@@ -1,0 +1,102 @@
+# Example Usage:
+
+# ```yaml
+# substitutions:
+#   rf:
+#     gpio: GPIO16
+#     protocol: 6
+#     special_codes: # (optional)
+#       all_on:   '011111110000011100011110'
+#       all_off:  '011100100000100000010100'
+#     filters: # (optional, default: [{settle: 250ms}])
+#       - settle: 250ms
+#   plugs:
+#     restore_mode: RESTORE_DEFAULT_OFF # (optional, default: ALWAYS_OFF)
+#     inverted: true # (optional, default: true)
+#     mapping:
+#       - gpio: GPIO27
+#         code: '010001110011111000101001'
+#       - gpio: GPIO26
+#         code: '011111010000010100011101'
+#       # (add as many relays as you need)
+# ```
+---
+
+# Generate switches for each physical relay
+switch: |
+    # set ns = namespace(switches=[])
+    # for plug in plugs.mapping
+    # set restore_mode = plug.restore_mode | default(plugs.restore_mode | default("ALWAYS_OFF"))
+    # set inverted = plug.inverted | default(plugs.inverted | default(true))
+    # set ns.switches = ns.switches + [{
+        "platform" : "gpio",
+        "restore_mode": restore_mode,
+        "pin" : {
+          "number" : plug.gpio,
+          "inverted": inverted,
+          "mode": {
+            "output" : true,
+            "pullup" : true
+          }
+        },
+        "id" : "plug_" + loop.index|string,
+        "name" : "Plug " + loop.index|string
+      }]
+    # endfor
+    ${ns.switches}
+
+# Generate binary sensors for RF Signals corresponding to each physical relay
+# When a signal is received, the corresponding switch is toggled
+# When special code ON is received, all relays are turned on, similarly for OFF
+binary_sensor: |
+    # set ns = namespace(binary_sensors=[])
+    # set actions = namespace(all_on=[], all_off=[])
+    # set filters = rf.filters | default([{"settle": "250ms"}])
+    # for plug in plugs.mapping
+    # set ns.binary_sensors = ns.binary_sensors + [{
+        "platform": "remote_receiver",
+        "id": "signal_plug_" + loop.index|string,
+        "rc_switch_raw": {
+          "protocol": rf.protocol,
+          "code": plug.code
+        },
+        "filters": filters,
+        "on_press": [{
+          "switch.toggle": "plug_" + loop.index|string
+        }]
+      }]
+    # set actions.all_on = actions.all_on + [{
+      "switch.turn_on": "plug_" + loop.index|string
+    }]
+    # set actions.all_off = actions.all_off + [{
+      "switch.turn_off": "plug_" + loop.index|string
+    }]
+    # endfor
+    # set codes = rf.special_codes | default({}, true)
+    # set all_on_code_exists = codes.all_on | default(false, true)
+    # set all_off_code_exists = codes.all_off | default(false, true)
+    # if all_on_code_exists
+    # set ns.binary_sensors = ns.binary_sensors + [{
+        "platform": "remote_receiver",
+        "id": "signal_all_on",
+        "rc_switch_raw": {
+          "protocol": rf.protocol,
+          "code": codes.all_on
+        },
+        "filters": filters,
+        "on_press": actions.all_on
+      }]
+    # endif
+    # if all_off_code_exists
+    # set ns.binary_sensors = ns.binary_sensors + [{
+        "platform": "remote_receiver",
+        "id": "signal_all_off",
+        "rc_switch_raw": {
+          "protocol": rf.protocol,
+          "code": codes.all_off
+        },
+        "filters": filters,
+        "on_press": actions.all_off
+      }]
+    # endif
+    ${ns.binary_sensors}

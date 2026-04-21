@@ -1,0 +1,3 @@
+url: "http://{{ ip }}/api/{{ endpoint }}"
+method: post
+payload: "{{ payload | default('{}') | tojson }}"

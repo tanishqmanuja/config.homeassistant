@@ -1,0 +1,73 @@
+switch: |
+    # set ns = namespace(switches=[])
+    # for t in ha_targets
+    # set ns.switches = ns.switches + [{
+        "platform" : "homeassistant",
+        "internal": true,
+        "id" : "ha_target_" + loop.index0|string,
+        "entity_id" : t.entity,
+        "on_state" : {
+          "then" : [{ 
+              "script.execute": {
+                "id": "set_ha_target_state",
+                "index": loop.index0,
+              },
+            }]
+          }
+      }]
+    # endfor
+    ${ns.switches}
+
+# sensor: |
+#     # set ns = namespace(result=[])
+#     # for t in ha_targets
+#     # if (t.brightness | default(false))
+#     # set ns.result = ns.result + [{
+#         "platform" : "homeassistant",
+#         "internal": true,
+#         "id" : "ha_target_" + loop.index0|string + "_brightness",
+#         "entity_id" : t.entity,
+#         "attribute" : "brightness",
+#       }]
+#     # endif
+#     # endfor
+#     ${ns.result}
+
+sensor:
+  - platform: homeassistant
+    internal: true
+    id: ha_target_3_brightness
+    entity_id: light.cct_lightbulb
+    attribute: brightness
+  - platform: homeassistant
+    internal: true
+    id: ha_target_4_brightness
+    entity_id: light.rgbcw_lightbulb
+    attribute: brightness
+
+script:
+  - id: set_ha_target_state
+    parameters:
+      index: int
+    then:
+      - lambda: |-
+          std::string id_name = "ha_target_" + std::to_string(index);
+
+          for (auto *s : App.get_switches()) {
+            if (!s) continue;
+            if (s->get_name() == id_name) {
+
+              bool state = s->state;
+              ESP_LOGI("HA", "%s = %s", id_name.c_str(), state ? "ON" : "OFF");
+
+              if (state)
+                id(ha_targets_state) |= (1 << index);
+              else
+                id(ha_targets_state) &= ~(1 << index);
+
+              ESP_LOGD("HA", "BITMASK = 0x%02X", id(ha_targets_state));
+              return;
+            }
+          }
+
+          ESP_LOGE("HA", "Switch '%s' NOT FOUND!", id_name.c_str());

@@ -1,11 +1,12 @@
 substitutions:
-  IP: 192.168.29.65
-  DEVICE_NAME: rfbridge01
-  FRIENDLY_NAME: RF Bridge 01
+  device_name: rfbridge01
+  friendly_name: RF Bridge 01
+  gpio_rf_transmitter: 16
+  gpio_rf_receiver: 32
 
 packages:
   base: !include ./common/base.yaml
-  board: !include ./common/board/nodemcu-32s.yaml
+  board: !include ./common/board/nodemcu-32s.idf.yaml
   wifi.stable: !include ./common/wifi/stable.yaml
   sensor.status: !include ./common/sensor/status.yaml
 
@@ -13,15 +14,17 @@ preferences:
   flash_write_interval: 5min
 
 remote_transmitter:
-  pin: 16
+  pin: ${gpio_rf_transmitter}
   carrier_duty_percent: 100%
+  non_blocking: true
 
 api:
-  services:
-    - service: transmit
+  actions:
+    - action: transmit
       variables:
         code: string
         repeat: int
+      supports_response: status
       then:
         - remote_transmitter.transmit_rc_switch_raw:
             protocol: 1
@@ -29,3 +32,53 @@ api:
             repeat:
               times: !lambda "return repeat;"
               wait_time: 0s
+        - api.respond:
+            success: true
+
+    - action: transmit_generic
+      variables:
+        protocol: int
+        code: string
+        repeat: int
+        wait: int
+      supports_response: status
+      then:
+        - remote_transmitter.transmit_rc_switch_raw:
+            protocol: !lambda 'return esphome::remote_base::RC_SWITCH_PROTOCOLS[protocol];'
+            code: !lambda "return code;"
+            repeat:
+              times: !lambda "return repeat;"
+              wait_time: !lambda "return wait;"
+        - api.respond:
+            success: true
+
+remote_receiver:
+  id: rf_receiver
+  pin:
+    number: ${gpio_rf_receiver}
+    mode:
+      input: true
+      pullup: true
+    inverted: true
+  tolerance: 50%
+  filter: 100us
+  idle: 4ms
+  # dump: all
+  on_rc_switch:
+    then:
+      - homeassistant.event:
+          event: esphome.rf_433_code_received
+          data:
+            protocol: !lambda 'return x.protocol;'
+            code: !lambda 'return to_string(x.code);'
+
+# binary_sensor:
+#   - &rf_signal
+#     platform: remote_receiver
+#     id: rf_signal_doorbell
+#     name: RF Signal Doorbell
+#     rc_switch_raw:
+#       protocol: 6
+#       code: '10110111010111111000001100110000' # Decimal: 3076490032 / 32bit
+#     filters:
+#       - settle: 250ms

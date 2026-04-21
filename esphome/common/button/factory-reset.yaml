@@ -1,0 +1,7 @@
+---
+button:
+  - platform: factory_reset
+    name: Factory Reset
+    icon: mdi:restart-alert
+    entity_category: diagnostic
+    disabled_by_default: true

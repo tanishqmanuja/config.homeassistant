@@ -1,0 +1,26 @@
+# ESPHome config for DimLED Mini
+#
+# -------- PINOUT --------
+# LED BUILTIN: GPIO1
+# LED STRIP  : GPIO2
+
+---
+packages:
+  base: !include ../../common/base.yaml
+  board: !include ../../common/board/esp01.yaml
+  uart.disable: !include ../../common/logger/disable.uart.yaml
+  wifi.stable: !include ../../common/wifi/stable.yaml
+  wifi.no-reboot: !include ../../common/wifi/no-reboot.yaml
+  api.no-reboot: !include ../../common/api/no-reboot.yaml
+  button.restart: !include ../../common/button/restart.yaml
+  manual.prefs: !include modules/manual-preferences.yaml
+  wifi.indication: !include modules/wifi-indication.yaml
+  led.builtin: !include modules/led-builtin.yaml
+  led.strip: !include modules/led-strip.yaml
+  led.strip.effect.ddp: !include modules/ddp.yaml
+
+esphome:
+  comment: DimLED Mini
+  project:
+      name: TQLabs.DimLED Mini
+      version: "1.0.0"

@@ -11,27 +11,29 @@ namespace ddp {
 
 class DDPComponent;
 
-enum DDPScalingMode { DDP_NO_SCALING     = 0,
-                      DDP_SCALE_PIXEL    = 1,
-                      DDP_SCALE_STRIP    = 2,
-                      DDP_SCALE_PACKET   = 3,
-                      DDP_SCALE_MULTIPLY = 4 };
+enum DDPScalingMode {
+  DDP_NO_SCALING = 0,
+  DDP_SCALE_PIXEL = 1,
+  DDP_SCALE_STRIP = 2,
+  DDP_SCALE_PACKET = 3,
+  DDP_SCALE_MULTIPLY = 4
+};
 
 class DDPLightEffectBase {
  public:
   DDPLightEffectBase();
 
-  virtual const std::string &get_name() = 0;
+  virtual const char *get_name() = 0;
 
   virtual void start();
   virtual void stop();
   bool timeout_check();
 
   void set_ddp(DDPComponent *ddp) { this->ddp_ = ddp; }
-  void set_timeout(uint32_t timeout) {this->timeout_ = timeout;}
-  void set_disable_gamma(bool disable_gamma) { this->disable_gamma_ = disable_gamma;}
-  void set_scaling_mode(DDPScalingMode scaling_mode) { this->scaling_mode_ = scaling_mode;}
-  void set_blank_on_idle(bool blank_on_idle) { this->blank_on_idle_ = blank_on_idle;}
+  void set_timeout(uint32_t timeout) { this->timeout_ = timeout; }
+  void set_disable_gamma(bool disable_gamma) { this->disable_gamma_ = disable_gamma; }
+  void set_scaling_mode(DDPScalingMode scaling_mode) { this->scaling_mode_ = scaling_mode; }
+  void set_blank_on_idle(bool blank_on_idle) { this->blank_on_idle_ = blank_on_idle; }
 
  protected:
   DDPComponent *ddp_{nullptr};

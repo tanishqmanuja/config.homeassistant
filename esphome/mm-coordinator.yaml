@@ -1,0 +1,70 @@
+substitutions:
+  baud_rate: 115200
+  # baud_rate: 9600
+  meshmesh_channel: 3
+  # meshmesh_ip: 127.82.207.122
+
+external_components:
+  - source: github://EspMeshMesh/esphome-meshmesh@main
+    # components: [meshmesh, meshmesh_direct, network, socket, esphome, ping]
+    refresh: always
+
+esphome:
+  name: mm-coordinator
+  friendly_name: MM Coordinator
+  comment: MeshMesh Network
+  project:
+    name: EspMeshMesh.MeshMesh Coordinator
+    version: 1.0.0
+
+esp8266:
+  board: nodemcuv2  
+  framework:
+    version: 3.1.2
+
+logger:
+  level: INFO
+  baud_rate: 0
+
+api:
+  reboot_timeout: 0s
+
+# wifi:
+#   ssid: meshmesh
+#   password: meshmesh
+#   enable_on_boot: false
+#   use_address: $meshmesh_ip
+
+mdns:
+  disabled: true
+
+socket:
+  implementation: meshmesh_esp8266
+
+ota:
+  platform: esphome
+  port: 3232
+
+meshmesh:
+  is_coordinator: true
+  baud_rate: $baud_rate
+  rx_buffer_size: 2048
+  tx_buffer_size: 4096
+  password: !secret meshmesh_password
+  channel: $meshmesh_channel
+  use_starpath: true
+
+ping:
+
+# output:
+#   - platform: gpio
+#     id: onboard_led_output
+#     pin:
+#       number: GPIO2
+#       inverted: true
+
+# light:
+#   - platform: binary
+#     id: onboard_led
+#     name: Onboard LED
+#     output: onboard_led_output

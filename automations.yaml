@@ -168,11 +168,24 @@
     from: Discharging
   conditions: []
   actions:
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 1
-      milliseconds: 0
+  - if:
+    - type: is_connected
+      condition: device
+      device_id: b001301051573e2c4c5acac7a3895386
+      entity_id: bdbf652a24967cfa1d56b53ced0d6fbb
+      domain: binary_sensor
+    then: []
+    else:
+    - wait_for_trigger:
+      - type: connected
+        device_id: b001301051573e2c4c5acac7a3895386
+        entity_id: bdbf652a24967cfa1d56b53ced0d6fbb
+        domain: binary_sensor
+        trigger: device
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 2
   - action: button.press
     metadata: {}
     data: {}
@@ -576,3 +589,266 @@
     data:
       ipv6: '{{ states(''sensor.myip_ipv6'') }}'
   mode: single
+- id: '1758005431743'
+  alias: 'Dhwani Room: Movie Mode'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - media_player.fire_tv_192_168_29_100
+    from: playing
+    id: not_playing
+    to:
+  - trigger: state
+    entity_id:
+    - input_boolean.dhwani_room_movie_mode
+    from: 'off'
+    to: 'on'
+    id: turn_on
+  - trigger: state
+    entity_id:
+    - media_player.fire_tv_192_168_29_100
+    from:
+    to: playing
+    id: playing
+  conditions:
+  - condition: state
+    entity_id: input_boolean.dhwani_room_movie_mode
+    state: 'on'
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: media_player.fire_tv_192_168_29_100
+      attribute: source
+      state: Jellyfin
+    alias: If is a Movie App
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - turn_on
+      sequence: []
+    - conditions:
+      - condition: trigger
+        id:
+        - playing
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 3
+        target:
+          entity_id: light.dimled04_led_strip
+    - conditions:
+      - condition: trigger
+        id:
+        - not_playing
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 1
+        target:
+          entity_id: light.dimled04_led_strip
+  mode: single
+- id: '1760952039867'
+  alias: Main Entrance Light (Motion)
+  description: ''
+  use_blueprint:
+    path: SmartThingsConnect/day_night_motion_lights_with_dim_before_off.yaml
+    input:
+      motion_entity: binary_sensor.presence01_occupancy
+      light_entities:
+      - light.dimled08_led_strip
+      retry_if_fail: true
+      day_time_start: 09:00:00
+      day_time_end: '20:00:00'
+      night_brightness: 100
+      night_dim_brightness: 50
+      no_motion_dim_wait_day: 5
+      no_motion_off_wait_day: 8
+      no_motion_dim_wait_night: 5
+      no_motion_off_wait_night: 7
+- id: '1761570289517'
+  alias: Manuja's Logo (Motion)
+  description: ''
+  use_blueprint:
+    path: TQLabs/day_light_motion_lights_wled.yaml
+    input:
+      light_entities:
+      - light.manuja_s_logo
+      motion_entity: binary_sensor.presence01_occupancy
+      wled_preset_select: select.manuja_s_logo_preset
+      day_dim_brightness: 75
+      night_brightness: 100
+      night_dim_brightness: 75
+      day_preset: Palette Rainbow
+      night_preset: Flow Analogous
+      no_motion_off_wait_day: 30
+      no_motion_off_wait_night: 30
+      no_motion_dim_wait_day: 5
+      no_motion_dim_wait_night: 5
+      day_time_start: 08:00:00
+      day_time_end: '20:00:00'
+      retry_if_fail: true
+      turn_on_bypass_condition: '{{ is_state(''input_boolean.door_ring_in_progress'',
+        ''on'') }}'
+- id: '1761756873919'
+  alias: A1 Mini Notification
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.a1mini_0309da572602736_print_progress
+    from:
+    to: '100'
+  conditions: []
+  actions:
+  - action: camera.snapshot
+    metadata: {}
+    data:
+      filename: /config/www/snapshots/a1_mini_completed.jpg
+    target:
+      entity_id: camera.a1mini_0309da572602736_camera
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - action: notify.mobile_app_oneplus_5
+    metadata: {}
+    data:
+      title: A1 Mini
+      message: "Print Complete \U0001F601"
+      data:
+        tag: a1_mini_completed
+        image: /local/snapshots/a1_mini_completed.jpg
+  mode: single
+- id: '1761807570088'
+  alias: Manuja's Logo Doorbell
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.rfbridge01_rf_signal_doorbell
+    from: 'off'
+    to: 'on'
+    enabled: false
+  - trigger: event
+    event_type: esphome.rf_433_code_received
+    event_data:
+      protocol: '6'
+      code: '3076490032'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.door_ring_in_progress
+  - sequence:
+    - action: rest_command.wled_save_previous
+      metadata: {}
+      data:
+        ip: wled-manujas-logo.local
+        psave: 20
+      response_variable: wled_response
+    - action: select.select_option
+      metadata: {}
+      data:
+        option: Doorbell Ring
+      target:
+        entity_id: select.manuja_s_logo_preset
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 7
+        milliseconds: 0
+    - action: select.select_option
+      metadata: {}
+      data:
+        option: Previous
+      target:
+        entity_id: select.manuja_s_logo_preset
+    continue_on_error: true
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.door_ring_in_progress
+  mode: single
+  max_exceeded: silent
+- id: '1761818160220'
+  alias: Doorbell Ring Image
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.rfbridge01_rf_signal_doorbell
+    from: 'off'
+    to: 'on'
+    enabled: false
+  - trigger: event
+    event_type: esphome.rf_433_code_received
+    event_data:
+      protocol: '6'
+      code: '3076490032'
+  conditions: []
+  actions:
+  - sequence:
+    - action: rest_command.freekiosk_call
+      metadata: {}
+      data:
+        ip: 192.168.29.24:8080
+        endpoint: wake
+      continue_on_error: true
+    - action: browser_mod.popup
+      data:
+        initial_style: fullscreen
+        content:
+          type: custom:webrtc-camera
+          url: cp_plus_01
+          poster: http://192.168.29.12:1984/api/frame.jpeg?src=cp_plus_01
+          muted: true
+          shortcuts:
+          - name: Close
+            icon: mdi:close-circle
+            service: browser_mod.close_popup
+            service_data:
+              browser_id: f067c1956b7e1c458b4144b9da1834c5
+          style: 'video {aspect-ratio: 16/9; object-fit: fill;} .shortcuts {top: 16px;
+            right: 16px; left: unset; --mdc-icon-size: 30px;} .mode {display: none}
+            .card {margin-top: 12px; margin-left: 3px}'
+        timeout: 45000
+        browser_id:
+        - f067c1956b7e1c458b4144b9da1834c5
+    - action: rest_command.freekiosk_call
+      metadata: {}
+      data:
+        ip: 192.168.29.24:8080
+        endpoint: brightness
+        payload:
+          value: 40
+      continue_on_error: true
+  - variables:
+      snapshot_file: doorbell_latest.jpg
+  - data:
+      filename: /config/www/snapshots/{{ snapshot_file }}
+    action: camera.snapshot
+    enabled: true
+    target:
+      entity_id: camera.192_168_29_110
+  - action: notify.mobile_app_oneplus_5
+    data:
+      title: "Doorbell Ring \U0001F6AA"
+      message: Someone is at the door!
+      data:
+        image: /local/snapshots/{{ snapshot_file }}
+        ttl: 0
+        priority: high
+        tag: door_bell_alert
+        clickAction: entityId:camera.cp_plus_01_profile_1_9
+        notification_icon: mdi:doorbell-video
+  mode: single
+  max_exceeded: silent

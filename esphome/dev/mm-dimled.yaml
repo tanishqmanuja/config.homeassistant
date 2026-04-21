@@ -1,0 +1,231 @@
+substitutions:
+  device_name: mm-dimled
+  friendly_name: MM DimLED
+  meshmesh_channel: 3
+  meshmesh_ip: 127.168.79.118
+  meshmesh_gateway_address: 0x52CF7A
+  default_brightness: 50%
+
+globals:
+   - id: should_increase
+     type: bool
+     restore_value: no
+     initial_value: 'true'
+
+external_components:
+  - source: github://EspMeshMesh/esphome-meshmesh@main
+    components: [meshmesh, meshmesh_direct, network, socket, esphome, ping]
+    refresh: always
+
+esphome:
+  name: $device_name
+  friendly_name: $friendly_name
+  comment: MeshMesh Network
+  project:
+    name: EspMeshMesh.MeshMesh Device
+    version: 1.0.0
+  on_boot:
+    - priority: 350
+      then:
+        - light.turn_on:
+            id: led_builtin
+            effect: blink
+
+esp8266:
+  board: nodemcuv2  
+  framework:
+    version: 3.1.2
+
+logger:
+  level: INFO
+  baud_rate: 0
+
+api:
+  id: api_id
+  reboot_timeout: 0s
+  on_client_connected: &client_check
+    - if:
+        condition:
+          lambda: 'return id(api_id).is_connected();'
+        then:
+          - light.turn_off: led_builtin
+        else:
+          - light.turn_on:
+              id: led_builtin
+              effect: blink
+  on_client_disconnected: *client_check
+
+wifi:
+  ssid: meshmesh
+  password: meshmesh
+  enable_on_boot: false
+  use_address: $meshmesh_ip
+
+ota:
+  platform: esphome
+  port: 3232
+
+mdns:
+  disabled: true
+
+socket:
+  implementation: meshmesh_esp8266
+
+meshmesh:
+  baud_rate: 0
+  rx_buffer_size: 0
+  tx_buffer_size: 0
+  password: !secret meshmesh_password
+  channel: $meshmesh_channel
+  bonding_mode: true
+
+meshmesh_direct:
+  id: mm_direct
+  on_receive:
+    then:
+      - light.turn_on: led_builtin
+      - lambda: |-
+            ESP_LOGD("lambda", "on_receive %06X data %s", from, format_hex_pretty(data, size).c_str());
+
+            if (size < 1) {
+              ESP_LOGW("lambda", "Received packet too short!");
+              return;
+            }
+
+            uint8_t value = data[0];
+
+            if (value == 0) {
+              id(led_strip).turn_off().perform();
+            } else {
+              float brightness = value / 255.0f;  // scale 1–255 → 0.0–1.0
+              auto call = id(led_strip).turn_on();
+              call.set_brightness(brightness);
+              call.set_transition_length(0);
+              call.perform();
+            }
+      - light.turn_off: led_builtin
+
+# ping:
+#   address: $meshmesh_gateway_address
+#   update_interval: 10s
+
+output:
+  - platform: gpio
+    id: led_builtin_output
+    pin:
+      number: GPIO1
+      inverted: true
+
+  - platform: esp8266_pwm
+    id: led_strip_output
+    pin:
+      number: GPIO3
+
+light:
+  - platform: binary
+    id: led_builtin
+    name: Onboard LED
+    output: led_builtin_output
+    effects:
+      - strobe:
+          name: blink
+          colors:
+            - state: true
+              brightness: 100%
+              duration: 150ms
+            - state: false
+              duration: 150ms 
+
+  - platform: monochromatic
+    output: led_strip_output
+    id: led_strip
+    name: LED Strip
+    restore_mode: ALWAYS_OFF
+    gamma_correct: 1.8
+    default_transition_length: 0.75s
+
+binary_sensor:
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_multi_click:
+      # Hold
+      - timing:
+          - ON for at least 500ms
+        then:
+          - lambda: |-
+              bool is_on = id(led_strip).current_values.is_on();
+              if(!is_on) {
+                id(should_increase) = true;
+                return;
+              }
+
+              float b = id(led_strip).current_values.get_brightness();
+              if (b <= 0.05f) {
+                id(should_increase) = true;
+              } else if (b >= 0.95f) {
+                id(should_increase) = false;
+              }
+          - if:
+              condition:
+                lambda: 'return id(should_increase) == true;'
+              then:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: led_strip
+                          relative_brightness: 2%
+                          transition_length: 200ms
+                      - delay: 100ms
+              else:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: led_strip
+                          relative_brightness: -2%
+                          transition_length: 200ms
+                      - delay: 100ms
+
+      # Double Press
+      - timing:
+        - ON for at most 400ms
+        - OFF for at most 500ms
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.turn_on:
+              id: led_strip
+              brightness: $default_brightness
+      
+      # Single Press
+      - timing:
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.toggle: led_strip
+
+  # - platform: ping
+  #   presence:
+  #     id: presence
+  #     trigger_on_initial_state: true
+  #     on_state:
+  #       then:
+  #         - if:
+  #             condition:
+  #               binary_sensor.is_on: presence
+  #             then:
+  #               - light.turn_off: led_builtin 
+  #             else:
+  #               - light.turn_on:
+  #                   id: led_builtin
+  #                   effect: blink

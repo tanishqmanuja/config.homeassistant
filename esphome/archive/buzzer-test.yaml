@@ -1,0 +1,55 @@
+substitutions:
+  device_name: buzzer-test
+  friendly_name: Buzzer Test
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/esp32dev.idf.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+
+output:
+  - platform: ledc
+    pin: GPIO25
+    id: buzzer_out
+
+rtttl:
+  id: buzzer
+  output: buzzer_out
+  # gain: 60%
+
+button:
+  - platform: template
+    name: "Play Siren"
+    on_press:
+      then:
+        - rtttl.play: 'siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e'
+
+  - platform: template
+    name: "Play SMB Theme"
+    on_press:
+      then:
+        - rtttl.play: 'SMBtheme:d=4,o=5,b=100:16e6,16e6,32p,8e6,16c6,8e6,8g6,8p,8g,8p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,16p,8c6,16p,8g,16p,8e,16p,8a,8b,16a#,8a,16g.,16e6,16g6,8a6,16f6,8g6,8e6,16c6,16d6,8b,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16c7,16p,16c7,16c7,p,16g6,16f#6,16f6,16d#6,16p,16e6,16p,16g#,16a,16c6,16p,16a,16c6,16d6,8p,16d#6,8p,16d6,8p,16c6'
+
+  - platform: template
+    name: "Play SMB Underground"
+    on_press:
+      then:
+        - rtttl.play: 'smb_under:d=4,o=6,b=100:32c,32p,32c7,32p,32a5,32p,32a,32p,32a#5,32p,32a#,2p,32c,32p,32c7,32p,32a5,32p,32a,32p,32a#5,32p,32a#,2p,32f5,32p,32f,32p,32d5,32p,32d,32p,32d#5,32p,32d#,2p,32f5,32p,32f,32p,32d5,32p,32d,32p,32d#5,32p,32d#'
+
+api:
+  actions:
+    - action: play_rtttl
+      variables:
+        volume: int
+        melody: string
+      then:
+        - lambda: |-
+            int v = volume;
+            if (v == 0) v = 100;
+            if (v < 0) v = 0;
+            if (v > 100) v = 100;
+            
+            float volume_f = v / 100.0f;
+
+            id(buzzer_out).set_max_power(volume_f);
+            id(buzzer).play(melody);

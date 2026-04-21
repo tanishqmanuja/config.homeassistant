@@ -1,0 +1,11 @@
+url: "http://{{ ip }}/json/state"
+method: post
+headers:
+  Content-Type: application/json
+payload: >
+  {
+    "psave": {{ psave }},
+    "n": "{{ name | default('Previous') }}",
+    "ib": true,
+    "sb": true
+  }

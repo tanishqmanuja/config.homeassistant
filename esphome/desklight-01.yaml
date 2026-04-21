@@ -1,47 +1,57 @@
 substitutions:
-  IP: 192.168.29.69
-  DEVICE_NAME: desklight01
-  FRIENDLY_NAME: Desk Light 01
+  device_name: desklight01
+  friendly_name: Desk Light 01
+  kvstore_addr: "http://192.168.29.12:8123/api/kvstore/$device_name"
+
+globals:
+  - id: allow_restore
+    type: bool
+    initial_value: 'true'
+    restore_value: false
 
 packages:
   base: !include ./common/base.yaml
   board: !include ./common/board/esp01.yaml
   logger.disable: !include ./common/logger/disable.yaml
   wifi.stable: !include ./common/wifi/stable.yaml
+  wifi.no-reboot: !include ./common/wifi/no-reboot.yaml
   api.no-reboot: !include ./common/api/no-reboot.yaml
-  sensor.wifi-signal: !include ./common/sensor/wifi-signal.yaml
 
 esp8266:
   restore_from_flash: false
   early_pin_init: false
 
-wifi:
-  reboot_timeout: 5min
-  on_disconnect:
-    - wifi.disable:
-    - delay: 1s
-    - wifi.enable:
-
 esphome:
-  esphome:
   comment: DimLED Proto I
   project:
       name: TQLabs.DimLED
-      version: "2.0.0"
+      version: "0.1.0"
   on_boot:
-    priority: 800
-    then:
-      - light.turn_on:
-          id: led_strip
-          brightness: 50%
+    - priority: -100
+      then:
+        - delay: 1min
+        - globals.set:
+            id: allow_restore
+            value: 'false'
 
 external_components:
-  - source:
-      type: local
-      path: components
+  - source: github://tanishqmanuja/esphome-components
     components: [ ddp ]
 
 ddp:
+
+http_request:
+  id: http_request_id
+  verify_ssl: false
+
+wifi:
+  on_connect:
+    then:
+      - if:
+          condition:
+            lambda: 'return id(allow_restore);'
+          then:
+            - script.execute: restore_light_state
 
 output:
   - platform: esp8266_pwm
@@ -57,7 +67,7 @@ light:
     output: led_strip_output
     id: led_strip
     name: LED Strip
-    restore_mode: ALWAYS_ON
+    restore_mode: ALWAYS_OFF
     gamma_correct: 1.8
     default_transition_length: 0.75s
     effects:
@@ -97,11 +107,67 @@ light:
             on_length: 1s
             off_length: 500ms
           update_interval: 1.5s
+    on_state:
+      then:
+        - script.execute: save_light_state
 
-# DISABLE UNUSED PINS
-binary_sensor:
-  - platform: gpio
-    id: unused_gpio_15
-    pin:
-      number: GPIO15
-      mode: INPUT_PULLUP
+script:
+  - id: save_light_state
+    mode: restart
+    then:
+      - delay: 1s
+      - lambda: |-
+          auto &rv = id(led_strip).remote_values;
+
+          bool is_on = rv.is_on();
+          float brightness = rv.get_brightness();
+          std::string effect = id(led_strip).get_effect_name();
+
+          char body[192];
+
+          snprintf(
+            body,
+            sizeof(body),
+            "{\"s\":%d,\"b\":%.3f,\"e\":\"%s\"}",
+            is_on ? 1 : 0,
+            brightness,
+            effect.c_str()
+          );
+
+          id(http_request_id).post(
+            "$kvstore_addr/led_strip",
+            body
+          );
+    
+  - id: restore_light_state
+    mode: restart
+    then:
+      - if:
+        condition:
+          lambda: return response->status_code == 200;
+        then:
+          - lambda: |-
+              json::parse_json(body, [](JsonObject root) -> bool {
+
+                if (!root["s"].is<int>() || !root["b"].is<float>()) {
+                  return false;
+                }
+
+                bool is_on = root["s"] | 0;
+                float brightness = root["b"] | 0.5f;
+                const char* effect = root["e"] | "";
+
+                auto call = id(led_strip).make_call();
+
+                call.set_brightness(brightness);
+
+                if (strlen(effect) > 0) {
+                  call.set_effect(effect);
+                }
+
+                call.set_state(is_on);
+                call.set_transition_length(0);
+                call.perform();
+
+                return true;
+              });

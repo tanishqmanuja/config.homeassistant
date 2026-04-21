@@ -1,0 +1,103 @@
+sensor:
+  - platform: rotary_encoder
+    id: rotary_encoder_dial
+    name: Rotary Encoder Dial
+    pin_a: ${pins.rotary_encoder.pin_a}
+    pin_b: ${pins.rotary_encoder.pin_b}
+    resolution: 2
+    restore_mode: ALWAYS_ZERO
+    filters:
+      - debounce: 1ms
+    on_clockwise:
+      then:
+        - lambda: |-
+            if(id(brightness_mode) == true){
+              id(brightness_up).execute();
+              return;
+            };
+            if(id(encoder_active).state){
+              id(current_pixel)++;
+              if (id(current_pixel) > 7) id(current_pixel) = 0;
+            };
+        - binary_sensor.template.publish:
+            id: encoder_active
+            state: ON
+        - binary_sensor.template.publish:
+            id: encoder_active
+            state: OFF
+        - script.execute: render_ring
+
+    on_anticlockwise:
+      then:
+        - lambda: |-
+            if(id(brightness_mode) == true){
+              id(brightness_down).execute();
+              return;
+            };
+            if(id(encoder_active).state){
+              id(current_pixel)--;
+              if (id(current_pixel) < 0) id(current_pixel) = 7;
+            };
+        - binary_sensor.template.publish:
+            id: encoder_active
+            state: ON
+        - binary_sensor.template.publish:
+            id: encoder_active
+            state: OFF
+        - script.execute: render_ring
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: ${pins.rotary_encoder.switch}
+      mode: INPUT_PULLUP
+    id: rotary_encoder_switch
+    name: Rotary Encoder Switch
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_multi_click:
+      # Double Press
+      - timing:
+        - ON for at most 400ms
+        - OFF for at most 500ms
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - lambda: |-
+              ESP_LOGI("rotary","Double Press");
+          - script.execute: toggle_brightness_mode 
+
+      # Single Press
+      - timing:
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - lambda: |-
+              ESP_LOGI("rotary","Single Press");
+          - binary_sensor.template.publish:
+              id: encoder_active
+              state: ON
+          - binary_sensor.template.publish:
+              id: encoder_active
+              state: OFF
+          - script.execute: toggle_current_ha_target
+
+script:
+  - id: toggle_current_ha_target
+    then:
+      - lambda: |-
+          int index = id(current_pixel);
+          std::string id_name = "ha_target_" + std::to_string(index);
+
+          for (auto *s : App.get_switches()) {
+            if (!s) continue;
+            if (s->get_name() == id_name) {
+              ESP_LOGI("HA_TOGGLE", "Found %s — toggling", id_name.c_str());
+              s->toggle();
+              return;
+            }
+          }
+
+          ESP_LOGW("HA_TOGGLE", "No switch found for '%s' (index=%d)", id_name.c_str(), index);

@@ -1,0 +1,254 @@
+substitutions:
+  device_name: mm-remote
+  friendly_name: MM Remote
+  meshmesh_channel: 3
+  default_brightness: 50%
+
+  led_node_addr: 0xA84F76
+  
+  brightness_change: 2%
+
+globals:
+   - id: should_increase
+     type: bool
+     restore_value: no
+     initial_value: 'true'
+   - id: sync_mode
+     type: bool
+     restore_value: no
+     initial_value: 'false'
+
+external_components:
+  - source: github://EspMeshMesh/esphome-meshmesh@main
+    components: [meshmesh, meshmesh_direct, network, socket, esphome]
+
+esphome:
+  name: $device_name
+  friendly_name: $friendly_name
+  comment: MeshMeshGo
+  project:
+    name: EspMeshMesh.MeshMesh Gateway
+    version: 1.0.0
+
+esp8266:
+  board: nodemcuv2  
+  framework:
+    version: 3.1.2
+
+logger:
+  level: INFO
+  baud_rate: 0
+
+api:
+  reboot_timeout: 0s
+
+mdns:
+  disabled: true
+
+socket:
+  implementation: meshmesh_esp8266
+
+meshmesh:
+  baud_rate: 0
+  rx_buffer_size: 0
+  tx_buffer_size: 0
+  password: !secret meshmesh_password
+  channel: $meshmesh_channel
+  bonding_mode: true
+
+meshmesh_direct:
+  id: mm_direct
+  on_receive:
+    then:
+      - lambda: |-
+            ESP_LOGD("lambda", "on_receive %06X data %s", from,  format_hex_pretty(data, size).c_str());
+
+output:
+  - platform: esp8266_pwm
+    id: onboard_led_output
+    pin:
+      number: GPIO2
+      inverted: true
+
+light:
+  - platform: monochromatic
+    id: onboard_led
+    name: Onboard LED
+    output: onboard_led_output
+    gamma_correct: 1
+    effects:
+      - strobe:
+          name: blink
+          colors:
+            - state: true
+              duration: 150ms
+            - state: false
+              duration: 150ms
+
+sensor:
+  - platform: rotary_encoder
+    name: "${friendly_name} Encoder"
+    pin_a: D5
+    pin_b: D6
+    resolution: 1
+    restore_mode: ALWAYS_ZERO
+    filters:
+      - debounce: 1ms
+    on_clockwise:
+      then:
+        - light.dim_relative:
+            id: onboard_led
+            relative_brightness: $brightness_change
+            transition_length: 100ms
+        - if:
+            condition:
+              lambda: 'return id(sync_mode) == true;'
+            then:
+              - lambda: |-
+                  bool is_on = id(onboard_led).current_values.is_on();
+                  float b = id(onboard_led).current_values.get_brightness();
+
+                  uint8_t value = static_cast<uint8_t>(b * 255.0f);
+                  if (!is_on) {
+                    value = 0;
+                  }
+
+                  const uint8_t data[] = { value };
+                  id(mm_direct)->unicastSendCustom(data, sizeof(data), ${led_node_addr});
+    on_anticlockwise:
+      then:
+        - light.dim_relative:
+            id: onboard_led
+            relative_brightness: -$brightness_change
+            transition_length: 100ms
+        - if:
+            condition:
+              lambda: 'return id(sync_mode) == true;'
+            then:
+              - lambda: |-
+                  bool is_on = id(onboard_led).current_values.is_on();
+                  float b = id(onboard_led).current_values.get_brightness();
+
+                  uint8_t value = static_cast<uint8_t>(b * 255.0f);
+                  if (!is_on) {
+                    value = 0;
+                  }
+
+                  const uint8_t data[] = { value };
+                  id(mm_direct)->unicastSendCustom(data, sizeof(data), ${led_node_addr});
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+    name: "${friendly_name} Encoder Button"
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_multi_click:
+      # Double Press
+      - timing:
+        - ON for at most 400ms
+        - OFF for at most 500ms
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - lambda: |-
+              id(sync_mode) = !id(sync_mode);
+          - light.turn_on:
+              id: onboard_led
+              effect: blink
+          - delay: 600ms
+          - light.turn_on:
+              id: onboard_led
+              effect: "None"
+
+
+      # Single Press
+      - timing:
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - lambda: |-
+              bool is_on = id(onboard_led).current_values.is_on();
+              float b = id(onboard_led).current_values.get_brightness();
+
+              uint8_t value = static_cast<uint8_t>(b * 255.0f);
+              if (!is_on) {
+                value = 0;
+              }
+
+              const uint8_t data[] = { value };
+              id(mm_direct)->unicastSendCustom(data, sizeof(data), ${led_node_addr});
+
+
+  - platform: gpio
+    id: boot_button
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_multi_click:
+      # Hold
+      - timing:
+          - ON for at least 500ms
+        then:
+          - lambda: |-
+              bool is_on = id(onboard_led).current_values.is_on();
+              if(!is_on) {
+                id(should_increase) = true;
+                return;
+              }
+
+              float b = id(onboard_led).current_values.get_brightness();
+              if (b <= 0.05f) {
+                id(should_increase) = true;
+              } else if (b >= 0.95f) {
+                id(should_increase) = false;
+              }
+          - if:
+              condition:
+                lambda: 'return id(should_increase) == true;'
+              then:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: onboard_led
+                          relative_brightness: 2%
+                          transition_length: 200ms
+                      - delay: 100ms
+              else:
+                - while:
+                    condition:
+                      binary_sensor.is_on: boot_button
+                    then:
+                      - light.dim_relative:
+                          id: onboard_led
+                          relative_brightness: -2%
+                          transition_length: 200ms
+                      - delay: 100ms
+
+      # Double Press
+      - timing:
+        - ON for at most 400ms
+        - OFF for at most 500ms
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.turn_on:
+              id: onboard_led
+              brightness: $default_brightness
+      
+      # Single Press
+      - timing:
+        - ON for at most 500ms
+        - OFF for at least 200ms
+        then:
+          - light.toggle: onboard_led

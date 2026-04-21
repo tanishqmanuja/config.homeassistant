@@ -1,0 +1,23 @@
+---
+
+esphome:
+  on_boot:
+    - priority: 350
+      then:
+        - light.turn_on:
+            id: led_builtin
+            effect: blink
+
+wifi:
+  on_connect:
+    then:
+      - light.turn_on:
+          id: led_builtin
+          effect: "None"
+      - delay: 2ms
+      - light.turn_off: led_builtin
+  on_disconnect:
+    then:
+      - light.turn_on:
+          id: led_builtin
+          effect: blink

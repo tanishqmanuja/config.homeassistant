@@ -1,0 +1,165 @@
+substitutions:
+  device_name: quicktick-alpha
+  friendly_name: QuickTick Alpha
+
+  pins:
+    onboard_led: GPIO2
+    rotary_encoder:
+      pin_a: GPIO23
+      pin_b: GPIO22
+      switch: GPIO4
+    led_ring: GPIO13
+
+  brightness_change: 2%
+
+  ha_targets:
+    - entity: light.tanishq_room_switcher_ch_d
+    - entity: light.tanishq_room_switcher_ch_c
+    - entity: light.tanishq_room_switcher_ch_b
+    - entity: light.cct_lightbulb
+      brightness: true
+    - entity: light.rgbcw_lightbulb
+      brightness: true
+    - entity: light.not_found
+    - entity: light.not_found
+    - entity: switch.tanishq_room_switcher_ch_a
+
+packages:
+  base: !include ./common/base.yaml
+  board: !include ./common/board/esp32dev.idf.yaml
+  wifi.stable: !include ./common/wifi/stable.yaml
+
+  onboard_led: !include ./devices/quicktick/onboard_led.yaml
+  rotary_encoder: !include ./devices/quicktick/rotary_encoder.yaml
+  ha.targets: !include ./devices/quicktick/ha.targets.yaml
+
+globals:
+  - id: current_pixel
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: ha_targets_state
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: brightness_mode
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+light:
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: ${pins.led_ring}
+    num_leds: 8
+    chipset: ws2812
+    id: led_ring
+    name: LED Ring
+
+binary_sensor:
+  - platform: template
+    id: encoder_active
+    device_class: moving
+    filters:
+      - delayed_off: 10s
+
+script:
+  - id: render_ring
+    then:
+      - lambda: |-
+          auto *out = (AddressableLight *) id(led_ring).get_output();
+
+          if (!id(encoder_active).state) {
+            out->all().fade_to_black(255);
+            out->schedule_show();
+            return;
+          }
+
+          if (id(brightness_mode) == true) {
+            ESP_LOGI("BRIGHTNESS", "Mode Enabled");
+            int index = id(current_pixel);
+            std::string id_name = "ha_target_" + std::to_string(index) + "_brightness";
+
+            float brightness = -1.0f;   // invalid marker
+
+            for (auto *s : App.get_sensors()) {
+              if (!s) continue;
+              if (s->get_name() == id_name) {
+                brightness = s->state;
+                break;
+              }
+            }
+
+            ESP_LOGI("BRIGHTNESS", "Brightness = %f", brightness);
+
+            if (brightness < 0.0f) {
+              out->all().fade_to_black(255);
+              out->schedule_show();
+              return;
+            }
+
+            if (brightness < 0) brightness = 0;
+            if (brightness > 255) brightness = 255;
+
+            int lit = (brightness * 8) / 255;
+
+            for (int i = 0; i < out->size(); i++) {
+              if (i < lit) {
+                out->range(i, i+1).set_rgb(0, 200, 0);
+              } else {
+                out->range(i, i+1).set_rgb(0, 0, 0);
+              }
+            }
+
+            out->schedule_show();
+            return;
+          } 
+
+          for (int i = 0; i < out->size(); i++) {
+
+            bool is_on = id(ha_targets_state) & (1 << i);
+            bool is_current = (i == id(current_pixel));
+
+            uint8_t r = 0, g = 0, b = 0;
+
+            if (is_on) { g = is_current ? 165 : 80; }
+            else       { r = is_current ? 200 : 80; }
+
+            out->range(i,i+1).set_rgb(r, g, b);
+          }
+          out->schedule_show();
+
+  - id: toggle_brightness_mode
+    then:
+      - lambda: |-
+          if(id(brightness_mode) == true) {
+            id(brightness_mode) = false;
+            ESP_LOGI("BRIGHTNESS", "OFF");
+            return;
+          }
+
+          int i = id(current_pixel);
+          bool capabilities[] = { false, false, false, true, true, false, false, false };
+
+          if (i < 0 || i >= 8) return; 
+
+          if (capabilities[i] == true) {
+            id(brightness_mode) = true;
+            ESP_LOGI("BRIGHTNESS", "Mode Enabled for target %d", i);
+          }
+
+      - script.execute: render_ring
+
+  - id: brightness_up
+    then:
+      - lambda: |-
+          int i = id(current_pixel);
+          
+
+interval:
+  - interval: 100ms
+    startup_delay: 1s
+    then:
+      - script.execute: render_ring

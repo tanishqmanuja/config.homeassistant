@@ -1,0 +1,12 @@
+esp8266:
+  restore_from_flash: true
+
+preferences:
+  flash_write_interval: never
+
+script:
+  - id: sync_preferences
+    then:
+      - delay: 1s
+      - lambda: |-
+          global_preferences->sync();

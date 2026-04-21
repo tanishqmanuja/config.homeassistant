@@ -1,3 +1,4 @@
+# Docs: https://esphome.io/components/ota/esphome/
 ---
 ota:
-  platform: esphome
+  - platform: esphome

@@ -1,0 +1,6 @@
+---
+substitutions:
+  log_level: DEBUG
+
+logger:
+  level: $log_level

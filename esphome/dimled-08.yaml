@@ -1,0 +1,13 @@
+substitutions:
+  device_name: dimled08
+  friendly_name: DimLED 08
+  default_brightness: 50%
+
+packages:
+  # dimled.mk2: !include products/dimled.mk2/base.yaml
+  dimled.mk2: github://tqlabs-in/dimled-mark-2/esphome/device/base.yaml
+  # dimled.mk2:
+  #   url: https://github.com/tqlabs-in/dimled
+  #   files: [ esphome/base.yaml ]
+  #   ref: mark2
+  #   refresh: 0s

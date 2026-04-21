@@ -1,0 +1,11 @@
+---
+substitutions:
+  wifi_gateway: !secret WIFI_GATEWAY
+  wifi_subnet: 255.255.255.0
+
+wifi:
+  manual_ip:
+    static_ip: $wifi_static_ip
+    gateway: $wifi_gateway
+    subnet: $wifi_subnet
+

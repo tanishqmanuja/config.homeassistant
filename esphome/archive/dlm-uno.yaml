@@ -1,0 +1,22 @@
+substitutions:
+  device_code: "244190" # REPLACE WITH YOUR DEVICE CODE
+  device_suffix: uno
+  # wifi_ssid: !secret WIFI_SSID
+  # wifi_password: !secret WIFI_PASSWORD
+
+esphome:
+  name_add_mac_suffix: false
+
+# NOTE: REMOVE THIS CODE BLOCK AFTER THE FIRST SUCCESSFUL UPLOAD
+wifi:
+  use_address: dimled-mini-${device_code}.local
+
+packages:
+  dimled.mini:
+    url: https://github.com/tqlabs-in/dimled-mini
+    files:
+      - esphome/device/base.yaml
+      - esphome/device/web-server/remote.yaml
+    ref: main
+    refresh: always
+

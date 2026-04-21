@@ -1,0 +1,21 @@
+output:
+  - platform: gpio
+    id: led_builtin_output
+    pin:
+      number: GPIO1
+      inverted: true
+
+light:
+  - platform: binary
+    id: led_builtin
+    output: led_builtin_output
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+          name: blink
+          colors:
+            - state: true
+              brightness: 50% 
+              duration: 150ms
+            - state: false
+              duration: 150ms 
